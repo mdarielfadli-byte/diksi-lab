@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./aurora.css";
 import "./expansion.css";
+import "./audit-power.css";
 export const metadata: Metadata = {
   title: "BangunBrandmu × Dotte Digital",
   description: "Brand strategy and digital execution for businesses ready to grow.",
