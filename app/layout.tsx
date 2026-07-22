@@ -4,6 +4,7 @@ import "./aurora.css";
 import "./expansion.css";
 import "./audit-power.css";
 import "./channel-audit.css";
+import "./content-polish.css";
 export const metadata: Metadata = {
   title: "BangunBrandmu × Dotte Digital",
   description: "Brand strategy and digital execution for businesses ready to grow.",
