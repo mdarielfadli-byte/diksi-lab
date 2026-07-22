@@ -20,13 +20,10 @@ export default function Home() {
           <div className="button-row"><Link className="button gold" href="/consultation">Mulai percakapan <span>→</span></Link><a className="button ghost" href="#audit">Cek kesiapan bisnis</a></div>
           <div className="hero-notes"><span>Brand-led</span><span>Human-first</span><span>Result-minded</span></div>
         </div>
-        <div className="signal-card">
-          <div className="signal-top"><span>GROWTH SIGNAL</span><b>Live</b></div>
-          <div className="signal-score"><strong>72</strong><small>readiness score</small></div>
-          <div className="meter"><span>Brand clarity</span><i><b style={{width:"78%"}} /></i></div>
-          <div className="meter"><span>Digital presence</span><i><b style={{width:"62%"}} /></i></div>
-          <div className="meter"><span>Growth engine</span><i><b style={{width:"45%"}} /></i></div>
-          <p>Mulai dari insight yang jelas, lalu tumbuh dengan langkah yang tepat.</p>
+        <div className="hero-art" aria-hidden="true">
+          <div className="art-sphere" /><div className="art-disc disc-one" /><div className="art-disc disc-two" />
+          <div className="art-word">BD</div><div className="art-sticker">STRATEGY<br/>IN MOTION <b>↗</b></div>
+          <div className="signal-card"><div className="signal-top"><span>GROWTH SIGNAL</span><b>Live</b></div><div className="signal-score"><strong>72</strong><small>readiness score</small></div><div className="meter"><span>Brand clarity</span><i><b style={{width:"78%"}} /></i></div><div className="meter"><span>Digital presence</span><i><b style={{width:"62%"}} /></i></div><div className="meter"><span>Growth engine</span><i><b style={{width:"45%"}} /></i></div></div>
         </div>
       </div>
     </section>
