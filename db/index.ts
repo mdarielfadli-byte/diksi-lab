@@ -1,13 +1,8 @@
-import { env } from "cloudflare:workers";
-import { drizzle } from "drizzle-orm/d1";
-import * as schema from "./schema";
-
-export function getDb() {
-  if (!env.DB) {
-    throw new Error(
-      "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database."
-    );
-  }
-
-  return drizzle(env.DB, { schema });
+/**
+ * Database access is intentionally unconfigured in the Vercel deployment.
+ * Add a Vercel-compatible adapter and environment variables here when durable
+ * application data is introduced.
+ */
+export function getDb(): never {
+  throw new Error("Database access has not been configured for this deployment.");
 }
