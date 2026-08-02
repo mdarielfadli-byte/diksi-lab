@@ -1,98 +1,58 @@
-# vinext-starter
+# Diksilab
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Digital agency website for Diksilab, built with Next.js App Router and deployed on Vercel.
 
-## Prerequisites
+## Live site
 
-- Node.js `>=22.13.0`
+- Production: https://diksi-lab.vercel.app
+- GitHub repository: https://github.com/muhammadfadli-dot/diksi-lab
 
-## Quick Start
+## Stack
+
+- Next.js 16 / React 19
+- TypeScript
+- App Router
+- Vercel
+
+## Main pages
+
+- Home, Vision, Services, and Works
+- Consultation / Work Together
+- Interactive Audit and Channel Audit
+- Articles, individual article posts, and FAQ
+
+## Local development
+
+Prerequisite: Node.js `>=22.13.0`.
 
 ```bash
 npm install
 npm run dev
+```
+
+Open http://localhost:3000.
+
+## Validation and deployment
+
+```bash
 npm run build
+npx vercel --prod
 ```
 
-This starter does not use `wrangler.jsonc`.
+The project is linked to Vercel. Use a production deploy only after validating the build and intended changes.
 
-## Included Shape
+## Change log
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+### 2026-08-02 — Diksilab identity and Services refinement
 
-## Workspace Auth Headers
+- Replaced the text-based header and footer wordmark with the official Diksilab logo asset.
+- Added the Diksilab icon as the site favicon through `app/icon.png`.
+- Refined the Services page into four strategic agency offerings: UI/UX & Web, Digital Marketing, SEO, and Brand & Rebranding.
+- Added detailed scope, package fit, and deliverables for Basic, Intermediate, and Advanced tiers.
+- Published the verified production build to Vercel.
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+### Previous delivery highlights
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- Migrated the runtime from Vinext/Cloudflare to Next.js/Vercel.
+- Added articles, FAQ, Work Together, Interactive Audit, and Channel Audit flows.
+- Refined the portfolio Works layout and CTA treatment.

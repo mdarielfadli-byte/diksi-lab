@@ -24,216 +24,216 @@ type Service = {
 const services: Service[] = [
   {
     name: "UI/UX & Web",
-    eyebrow: "01 / DIGITAL EXPERIENCE",
+    eyebrow: "01 / PENGALAMAN DIGITAL",
     intro: "Website dan produk digital yang terasa jelas, cepat, dan meyakinkan.",
     description:
       "Kami menyatukan strategi, desain pengalaman pengguna, dan pengembangan website agar setiap kunjungan bergerak lebih dekat ke tujuan bisnis Anda—dari membangun kredibilitas hingga menghasilkan leads.",
     bullets: [
-      "UX research, customer journey, wireframe, dan prototype interaktif",
-      "Landing page, company profile, e-commerce, hingga website custom",
-      "Responsive development, CMS-ready build, analytics, dan fondasi SEO",
-      "Design system yang membuat pengalaman digital konsisten saat bisnis bertumbuh",
+      "Riset UX, perjalanan pelanggan, wireframe, dan purwarupa interaktif",
+      "Landing page, profil perusahaan, e-commerce, hingga website kustom",
+      "Pengembangan responsif, CMS siap pakai, analitik, dan fondasi SEO",
+      "Sistem desain yang membuat pengalaman digital konsisten saat bisnis bertumbuh",
     ],
     plans: [
       {
-        name: "Basic",
-        title: "Launch Essential",
+        name: "Dasar",
+        title: "Fondasi Peluncuran",
         summary: "Fondasi digital yang rapi untuk memperkenalkan bisnis dan mengubah perhatian menjadi percakapan.",
-        forWho: "Ideal untuk bisnis baru, campaign, atau layanan dengan satu fokus utama.",
+        forWho: "Ideal untuk bisnis baru, kampanye, atau layanan dengan satu fokus utama.",
         includes: [
           "Arah visual, wireframe, dan UI dasar di Figma",
-          "Landing page atau website company profile ringkas",
-          "Responsive build dengan CMS yang mudah dikelola",
-          "Basic on-page SEO, sitemap, dan analytics setup",
-          "Dua putaran revisi dan handover yang jelas",
+          "Landing page atau website profil perusahaan ringkas",
+          "Pengembangan responsif dengan CMS yang mudah dikelola",
+          "SEO on-page dasar, sitemap, dan pengaturan analitik",
+          "Dua putaran revisi dan serah-terima yang jelas",
         ],
       },
       {
-        name: "Intermediate",
-        title: "Growth Website",
+        name: "Menengah",
+        title: "Website Bertumbuh",
         summary: "Website multi-halaman yang dibangun dari kebutuhan pengguna, pesan brand, dan target konversi.",
-        forWho: "Ideal untuk bisnis yang siap menguatkan kredibilitas dan alur lead generation.",
+        forWho: "Ideal untuk bisnis yang siap menguatkan kredibilitas dan alur perolehan lead.",
         includes: [
-          "UX discovery, site structure, dan content direction",
-          "UI hi-fidelity serta prototype untuk alur utama",
-          "Website multi-halaman dengan component system",
+          "Discovery UX, struktur situs, dan arah konten",
+          "UI high-fidelity serta purwarupa untuk alur utama",
+          "Website multi-halaman dengan sistem komponen",
           "Optimasi performa, Google Analytics, Search Console, dan SEO dasar",
-          "Empat putaran revisi serta dokumentasi handover",
+          "Empat putaran revisi serta dokumentasi serah-terima",
         ],
       },
       {
-        name: "Advanced",
-        title: "Digital Platform",
+        name: "Lanjutan",
+        title: "Platform Digital",
         summary: "Pengalaman digital menyeluruh untuk platform, e-commerce, atau website custom yang kompleks.",
         forWho: "Ideal untuk bisnis dengan banyak layanan, user flow, atau kebutuhan integrasi khusus.",
         includes: [
-          "Research mendalam: persona, kompetitor, dan opportunity map",
-          "UX/UI end-to-end, prototype interaktif, dan usability feedback",
-          "Website 13+ halaman, e-commerce, atau custom workflow",
-          "Technical, mobile, speed, dan local SEO foundation",
-          "Training CMS, dokumentasi, serta enam putaran revisi",
+          "Riset mendalam: persona, kompetitor, dan peta peluang",
+          "UX/UI menyeluruh, purwarupa interaktif, dan masukan usability",
+          "Website 13+ halaman, e-commerce, atau alur kerja kustom",
+          "Fondasi SEO teknis, mobile, kecepatan, dan lokal",
+          "Pelatihan CMS, dokumentasi, serta enam putaran revisi",
         ],
       },
     ],
   },
   {
     name: "Digital Marketing",
-    eyebrow: "02 / PERFORMANCE MARKETING",
+    eyebrow: "02 / PEMASARAN BERBASIS PERFORMA",
     intro: "Kampanye yang menyambungkan pesan, media, dan momentum pertumbuhan.",
     description:
       "Kami membantu bisnis menjangkau audiens yang tepat melalui strategi media yang terukur—bukan sekadar menyalakan iklan. Setiap campaign disusun untuk belajar, mengoptimalkan, dan meningkatkan kualitas hasilnya dari waktu ke waktu.",
     bullets: [
-      "Strategi campaign, funnel, audience research, dan channel planning",
-      "Meta Ads, Google Ads, TikTok Ads, serta creative and copy direction",
-      "Lead generation, retargeting, remarketing, dan conversion optimisation",
-      "Monitoring transparan, eksperimen terstruktur, serta reporting berkala",
+      "Strategi kampanye, funnel, riset audiens, dan perencanaan kanal",
+      "Meta Ads, Google Ads, TikTok Ads, serta arah kreatif dan copy",
+      "Perolehan lead, retargeting, remarketing, dan optimasi konversi",
+      "Pemantauan transparan, eksperimen terstruktur, serta laporan berkala",
     ],
     plans: [
       {
-        name: "Basic",
-        title: "Campaign Starter",
-        summary: "Memulai paid campaign dengan fondasi targeting, pesan, dan pengukuran yang benar.",
+        name: "Dasar",
+        title: "Awal Kampanye",
+        summary: "Memulai kampanye berbayar dengan fondasi targeting, pesan, dan pengukuran yang tepat.",
         forWho: "Ideal untuk validasi channel atau meluncurkan campaign pertama.",
         includes: [
           "Setup dan optimasi satu platform iklan",
-          "Riset keyword atau audience serta arah pesan campaign",
-          "Dua konsep creative ads untuk pengujian awal",
-          "Tracking dasar dan rekomendasi alokasi media",
-          "Laporan performa bulanan dengan next steps",
+          "Riset kata kunci atau audiens serta arah pesan kampanye",
+          "Dua konsep iklan kreatif untuk pengujian awal",
+          "Pelacakan dasar dan rekomendasi alokasi media",
+          "Laporan performa bulanan dengan langkah berikutnya",
         ],
       },
       {
-        name: "Intermediate",
-        title: "Growth Campaign",
-        summary: "Menghubungkan beberapa channel dan creative testing untuk menemukan kombinasi yang paling efektif.",
+        name: "Menengah",
+        title: "Kampanye Bertumbuh",
+        summary: "Menghubungkan beberapa kanal dan pengujian kreatif untuk menemukan kombinasi paling efektif.",
         forWho: "Ideal untuk bisnis yang sudah memiliki offer dan ingin mengakselerasi leads atau penjualan.",
         includes: [
           "Setup hingga dua platform iklan yang relevan",
-          "Riset audience, funnel, dan eksperimen A/B testing",
-          "Empat variasi creative ads dan copy direction",
-          "Retargeting serta rekomendasi budget berbasis performa",
-          "Laporan mingguan yang ringkas dan actionable",
+          "Riset audiens, funnel, dan eksperimen A/B testing",
+          "Empat variasi iklan kreatif dan arah copy",
+          "Retargeting serta rekomendasi anggaran berbasis performa",
+          "Laporan mingguan yang ringkas dan dapat ditindaklanjuti",
         ],
       },
       {
-        name: "Advanced",
-        title: "Scale Up",
+        name: "Lanjutan",
+        title: "Perluasan Skala",
         summary: "Mesin performance marketing lintas channel untuk menjaga pertumbuhan sambil meningkatkan efisiensi.",
         forWho: "Ideal untuk brand yang ingin memperluas jangkauan tanpa kehilangan kontrol atas kualitas lead.",
         includes: [
           "Orkestrasi hingga tiga platform iklan",
-          "Funnel strategy, audience segmentation, dan localisation plan",
-          "Enam variasi creative ads dan iteration framework",
-          "Retargeting, lead quality review, dan scale recommendation",
-          "Weekly reporting plus sesi konsultasi strategi",
+          "Strategi funnel, segmentasi audiens, dan rencana lokalisasi",
+          "Enam variasi iklan kreatif dan kerangka iterasi",
+          "Retargeting, tinjauan kualitas lead, dan rekomendasi skala",
+          "Laporan mingguan serta sesi konsultasi strategi",
         ],
       },
     ],
   },
   {
     name: "SEO",
-    eyebrow: "03 / ORGANIC GROWTH",
+    eyebrow: "03 / PERTUMBUHAN ORGANIK",
     intro: "Visibilitas organik yang dibangun dari apa yang benar-benar dicari audiens Anda.",
     description:
       "SEO kami tidak berhenti pada ranking. Kami memetakan peluang pencarian, memperbaiki fondasi teknis, dan membangun konten yang membantu calon pelanggan menemukan alasan untuk memilih Anda.",
     bullets: [
-      "SEO audit: technical, on-page, off-page, dan content opportunity",
-      "Keyword research, content strategy, dan optimasi halaman prioritas",
-      "Technical SEO, page speed, schema markup, serta local SEO",
-      "Content production, authority building, reporting, dan optimisation roadmap",
+      "Audit SEO: teknis, on-page, off-page, dan peluang konten",
+      "Riset kata kunci, strategi konten, dan optimasi halaman prioritas",
+      "SEO teknis, kecepatan halaman, schema markup, serta SEO lokal",
+      "Produksi konten, penguatan otoritas, laporan, dan peta jalan optimasi",
     ],
     plans: [
       {
-        name: "Basic",
-        title: "SEO Foundation",
+        name: "Dasar",
+        title: "Fondasi SEO",
         summary: "Merapikan hal penting terlebih dahulu agar website punya pijakan kuat untuk bertumbuh di search.",
         forWho: "Ideal untuk website yang baru diluncurkan atau belum pernah diaudit secara menyeluruh.",
         includes: [
-          "Audit dasar technical, on-page, dan off-page",
-          "Keyword research serta content priority map",
+          "Audit dasar teknis, on-page, dan off-page",
+          "Riset kata kunci serta peta prioritas konten",
           "Optimasi hingga lima halaman prioritas",
-          "Setup atau pengecekan Search Console dan Analytics",
+          "Pengaturan atau pengecekan Search Console dan Analytics",
           "Laporan bulanan serta rekomendasi prioritas berikutnya",
         ],
       },
       {
-        name: "Intermediate",
-        title: "SEO Momentum",
+        name: "Menengah",
+        title: "Momentum SEO",
         summary: "Program optimasi berkelanjutan untuk meningkatkan relevansi konten dan peluang traffic berkualitas.",
         forWho: "Ideal untuk bisnis yang ingin membangun discovery organik secara konsisten.",
         includes: [
-          "Audit lengkap dan roadmap SEO per kuartal",
+          "Audit lengkap dan peta jalan SEO per kuartal",
           "Optimasi hingga 10 halaman dan Google Business Profile",
-          "Content brief atau dua artikel SEO-ready per bulan",
-          "Authority-building plan dengan link quality review",
-          "Monthly performance review dan rekomendasi strategi",
+          "Brief konten atau dua artikel siap SEO per bulan",
+          "Rencana penguatan otoritas dengan tinjauan kualitas link",
+          "Tinjauan performa bulanan dan rekomendasi strategi",
         ],
       },
       {
-        name: "Advanced",
-        title: "Organic Growth",
-        summary: "SEO terintegrasi untuk website berskala besar yang perlu memimpin category dan meningkatkan demand capture.",
+        name: "Lanjutan",
+        title: "Pertumbuhan Organik",
+        summary: "SEO terintegrasi untuk website berskala besar yang perlu memimpin kategori dan menangkap permintaan.",
         forWho: "Ideal untuk bisnis dengan kategori kompetitif, banyak halaman, atau target ekspansi.",
         includes: [
-          "Full SEO management dan advanced keyword clusters",
-          "Technical, mobile, speed, schema, dan local SEO optimisation",
+          "Manajemen SEO menyeluruh dan klaster kata kunci lanjutan",
+          "Optimasi SEO teknis, mobile, kecepatan, schema, dan lokal",
           "Optimasi halaman prioritas secara berkelanjutan",
-          "Content engine hingga empat artikel SEO-ready per bulan",
-          "Weekly reporting dan sesi konsultasi strategi",
+          "Mesin konten hingga empat artikel siap SEO per bulan",
+          "Laporan mingguan dan sesi konsultasi strategi",
         ],
       },
     ],
   },
   {
     name: "Brand & Rebranding",
-    eyebrow: "04 / BRAND SYSTEM",
+    eyebrow: "04 / SISTEM BRAND",
     intro: "Identitas yang memberi bisnis Anda arah, pembeda, dan rasa percaya diri untuk tumbuh.",
     description:
-      "Kami mengubah strategi brand menjadi sistem yang bisa dipakai—mulai dari positioning dan narasi hingga visual identity yang konsisten di setiap titik interaksi. Bukan hanya terlihat bagus, tetapi lebih mudah dikenali dan dipilih.",
+      "Kami mengubah strategi brand menjadi sistem yang bisa dipakai—mulai dari positioning dan narasi hingga identitas visual yang konsisten di setiap titik interaksi. Bukan hanya terlihat bagus, tetapi lebih mudah dikenali dan dipilih.",
     bullets: [
-      "Brand positioning, audience insight, competitor lens, dan differentiation",
-      "Brand voice, messaging, tagline, story, serta verbal identity",
-      "Logo, visual system, colour, typography, and practical brand guidelines",
-      "Social assets, marketing collateral, website direction, dan brand rollout",
+      "Positioning brand, insight audiens, sudut pandang kompetitor, dan diferensiasi",
+      "Suara brand, pesan utama, tagline, cerita, serta identitas verbal",
+      "Logo, sistem visual, warna, tipografi, dan panduan brand praktis",
+      "Aset sosial, materi pemasaran, arah website, dan peluncuran brand",
     ],
     plans: [
       {
-        name: "Basic",
-        title: "Brand Clarity",
+        name: "Dasar",
+        title: "Kejelasan Brand",
         summary: "Membuat identitas inti yang lebih rapi dan siap dipakai dengan cepat di kanal sehari-hari.",
         forWho: "Ideal untuk brand baru atau bisnis yang membutuhkan penyegaran identitas.",
         includes: [
-          "Logo design atau logo refresh",
-          "Colour palette, typography, dan basic brand guideline",
-          "Aset stationery dan social media profile",
+          "Desain logo atau penyegaran logo",
+          "Palet warna, tipografi, dan panduan brand dasar",
+          "Aset stationery dan profil media sosial",
           "Arah visual untuk komunikasi awal",
           "Sesi konsultasi strategi branding",
         ],
       },
       {
-        name: "Intermediate",
-        title: "Brand Identity",
+        name: "Menengah",
+        title: "Identitas Brand",
         summary: "Strategi dan identitas yang menyatukan cara brand berbicara, terlihat, dan muncul di pasar.",
         forWho: "Ideal untuk bisnis yang ingin memperjelas positioning sebelum memperluas komunikasinya.",
         includes: [
-          "Positioning, USP, dan brand differentiation",
-          "Tone of voice, key messaging, tagline, mission, dan vision",
-          "Visual identity dan template social media",
-          "Mini brand book serta asset pack yang siap digunakan",
-          "Arah desain landing page atau company profile",
+          "Positioning, USP, dan diferensiasi brand",
+          "Nada komunikasi, pesan utama, tagline, misi, dan visi",
+          "Identitas visual dan template media sosial",
+          "Mini brand book serta paket aset yang siap digunakan",
+          "Arah desain landing page atau profil perusahaan",
         ],
       },
       {
-        name: "Advanced",
-        title: "Brand Transformation",
+        name: "Lanjutan",
+        title: "Transformasi Brand",
         summary: "Sistem brand komprehensif untuk menyatukan strategi bisnis, pengalaman digital, dan eksekusi tim.",
         forWho: "Ideal untuk rebranding menyeluruh, ekspansi, atau organisasi dengan banyak touchpoint.",
         includes: [
-          "Customer persona, competitor research, dan brand strategy",
-          "Brand story, narrative, content strategy, dan communication framework",
-          "Full brand book dengan visual system yang scalable",
-          "Marketing collateral dan website revamp direction",
-          "Internal brand training serta workshop bersama tim",
+          "Persona pelanggan, riset kompetitor, dan strategi brand",
+          "Cerita brand, narasi, strategi konten, dan kerangka komunikasi",
+          "Brand book lengkap dengan sistem visual yang skalabel",
+          "Materi pemasaran dan arah pembaruan website",
+          "Pelatihan brand internal serta workshop bersama tim",
         ],
       },
     ],
@@ -248,10 +248,10 @@ export default function Services() {
     <SiteShell>
       <section className="inner-hero compact">
         <div className="wrap">
-          <p className="eyebrow">SERVICES</p>
+          <p className="eyebrow">LAYANAN</p>
           <h1>
-            One partner for the<br />
-            <i>whole digital picture.</i>
+            Satu partner untuk<br />
+            <i>gambaran digital menyeluruh.</i>
           </h1>
           <p>Mulai dari satu kebutuhan paling mendesak atau rangkai beberapa disiplin menjadi sistem pertumbuhan yang saling menguatkan.</p>
         </div>
@@ -279,7 +279,7 @@ export default function Services() {
             <p className="eyebrow">{service.eyebrow}</p>
             <h2 id="service-explorer-title">{service.intro}</h2>
             <p className="service-description">{service.description}</p>
-            <p className="service-scope-label">What we shape</p>
+            <p className="service-scope-label">Yang kami bentuk</p>
             <ul>
               {service.bullets.map((bullet) => (
                 <li key={bullet}>{bullet}</li>
@@ -307,14 +307,14 @@ export default function Services() {
           </div>
         </div>
 
-        <p className="service-note">Setiap paket adalah titik awal. Scope final, timeline, dan prioritas akan kami susun setelah memahami konteks bisnis, target, dan kesiapan aset Anda.</p>
+        <p className="service-note">Setiap paket adalah titik awal. Lingkup akhir, jadwal, dan prioritas akan kami susun setelah memahami konteks bisnis, target, dan kesiapan aset Anda.</p>
       </section>
 
       <section className="callout">
         <div className="wrap">
-          <p className="eyebrow light">CUSTOM, NOT COOKIE-CUTTER</p>
+          <p className="eyebrow light">KHUSUS, BUKAN TEMPLATE</p>
           <h2>Butuh kombinasi layanan yang dibangun untuk target bisnis Anda?</h2>
-          <Link href="/consultation" className="button gold">Rancang scope bersama →</Link>
+          <Link href="/consultation" className="button gold">Rancang lingkup bersama →</Link>
         </div>
       </section>
     </SiteShell>
