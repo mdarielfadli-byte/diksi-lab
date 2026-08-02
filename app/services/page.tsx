@@ -77,7 +77,7 @@ const services: Service[] = [
     ],
   },
   {
-    name: "Digital Marketing",
+    name: "Performance Marketing",
     eyebrow: "02 / PEMASARAN BERBASIS PERFORMA",
     intro: "Kampanye yang menyambungkan pesan, media, dan momentum pertumbuhan.",
     description:
@@ -253,7 +253,7 @@ export default function Services() {
             Satu partner untuk<br />
             <i>gambaran digital menyeluruh.</i>
           </h1>
-          <p>Mulai dari satu kebutuhan paling mendesak atau rangkai beberapa disiplin menjadi sistem pertumbuhan yang saling menguatkan.</p>
+          <p>Untuk UMKM dan startup, mulai dari satu kebutuhan paling mendesak atau rangkai beberapa disiplin menjadi sistem pertumbuhan yang saling menguatkan.</p>
         </div>
       </section>
 
@@ -308,6 +308,19 @@ export default function Services() {
         </div>
 
         <p className="service-note">Setiap paket adalah titik awal. Lingkup akhir, jadwal, dan prioritas akan kami susun setelah memahami konteks bisnis, target, dan kesiapan aset Anda.</p>
+      </section>
+
+      <section className="wrap section engagement-section">
+        <div className="engagement-heading">
+          <p className="eyebrow">PAKET PENDAMPINGAN</p>
+          <h2>Mulai sesuai fase bisnis, lalu bertumbuh dengan ritme yang tepat.</h2>
+          <p>Foundation, Growth, dan Scale adalah cara kami menyusun kerja sama lintas layanan. Bukan harga baku, melainkan titik awal untuk memilih fokus dan tingkat keterlibatan yang paling relevan.</p>
+        </div>
+        <div className="engagement-grid">
+          <article><p className="eyebrow">01 / FOUNDATION</p><h3>Rapikan fondasi.</h3><p>Untuk bisnis yang butuh kejelasan arah, pesan, dan aset inti sebelum melangkah lebih jauh.</p></article>
+          <article><p className="eyebrow">02 / GROWTH</p><h3>Sambungkan mesin tumbuh.</h3><p>Untuk bisnis yang siap menyatukan website, SEO, dan performance marketing menjadi perjalanan yang lebih terukur.</p></article>
+          <article><p className="eyebrow">03 / SCALE</p><h3>Perluas dengan terarah.</h3><p>Untuk brand yang ingin memperkuat sistem, eksperimen, dan eksekusi lintas kanal tanpa kehilangan fokus.</p></article>
+        </div>
       </section>
 
       <section className="callout">

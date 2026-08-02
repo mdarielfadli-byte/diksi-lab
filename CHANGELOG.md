@@ -9,6 +9,8 @@ Format mengikuti prinsip [Keep a Changelog](https://keepachangelog.com/en/1.1.0/
 ### Dokumentasi
 
 - Memisahkan riwayat perubahan dari README ke file `CHANGELOG.md`.
+- Menambahkan `Diksilab-Internal-Brand-Guideline.pdf` sebagai acuan fondasi brand: logo, favicon, warna, tipografi, aturan penggunaan, dan contoh penerapan visual.
+- Menambahkan `Diksilab-UIUX-Brand-Guideline.pdf` sebagai panduan review UI/UX dan handoff desain.
 
 ## [2026-08-02]
 
