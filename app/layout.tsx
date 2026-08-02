@@ -9,10 +9,10 @@ import "./preview-polish.css";
 import "./works-refinement.css";
 import "./services-polish.css";
 export const metadata: Metadata = {
-  metadataBase: new URL("https://diksi-lab.vercel.app"),
+  metadataBase: new URL("https://diksilab.com"),
   title: "Diksilab | Arah yang jelas, bisnis yang bergerak",
   description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.",
-  openGraph: { title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png"] },
-  twitter: { card: "summary_large_image", title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png"] },
+  openGraph: { title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=2"] },
+  twitter: { card: "summary_large_image", title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=2"] },
 };
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="id"><body>{children}</body></html>}
