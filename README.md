@@ -1,58 +1,50 @@
 # Diksilab
 
-Digital agency website for Diksilab, built with Next.js App Router and deployed on Vercel.
+Website digital agency Diksilab, dibangun dengan Next.js App Router dan dipublikasikan melalui Vercel.
 
-## Live site
+## Link proyek
 
-- Production: https://diksi-lab.vercel.app
-- GitHub repository: https://github.com/muhammadfadli-dot/diksi-lab
+- Website: https://diksi-lab.vercel.app
+- Repository: https://github.com/muhammadfadli-dot/diksi-lab
+- Riwayat perubahan: [CHANGELOG.md](CHANGELOG.md)
 
 ## Stack
 
-- Next.js 16 / React 19
+- Next.js 16 dan React 19
 - TypeScript
-- App Router
+- Next.js App Router
 - Vercel
 
-## Main pages
+## Halaman utama
 
-- Home, Vision, Services, and Works
-- Consultation / Work Together
-- Interactive Audit and Channel Audit
-- Articles, individual article posts, and FAQ
+- Beranda, Visi, Layanan, dan Karya
+- Konsultasi / Work Together
+- Audit Brand & Marketing serta Audit Kanal
+- Artikel, detail artikel, dan FAQ
 
-## Local development
+## Menjalankan secara lokal
 
-Prerequisite: Node.js `>=22.13.0`.
+Prasyarat: Node.js `>=22.13.0`.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000.
+Buka http://localhost:3000.
 
-## Validation and deployment
+## Validasi dan deployment
 
 ```bash
 npm run build
 npx vercel --prod
 ```
 
-The project is linked to Vercel. Use a production deploy only after validating the build and intended changes.
+Jalankan deployment production hanya setelah preview dan build telah diverifikasi.
 
-## Change log
+## Alur kerja
 
-### 2026-08-02 — Diksilab identity and Services refinement
-
-- Replaced the text-based header and footer wordmark with the official Diksilab logo asset.
-- Added the Diksilab icon as the site favicon through `app/icon.png`.
-- Refined the Services page into four strategic agency offerings: UI/UX & Web, Digital Marketing, SEO, and Brand & Rebranding.
-- Added detailed scope, package fit, and deliverables for Basic, Intermediate, and Advanced tiers.
-- Published the verified production build to Vercel.
-
-### Previous delivery highlights
-
-- Migrated the runtime from Vinext/Cloudflare to Next.js/Vercel.
-- Added articles, FAQ, Work Together, Interactive Audit, and Channel Audit flows.
-- Refined the portfolio Works layout and CTA treatment.
+1. Buat dan tinjau perubahan melalui preview lokal.
+2. Jalankan `npm run build` untuk validasi.
+3. Setelah disetujui, gunakan keyword `PUBLISH` untuk commit, push GitHub, dan deploy Vercel.
+4. Gunakan `Wrap Up` untuk merangkum pekerjaan dan memperbarui `CHANGELOG.md` bila diperlukan.
