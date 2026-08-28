@@ -8,17 +8,21 @@ const workstreams = [
 ];
 
 const plannedWork = [
-  ["29 AGU", "Kickoff Cycle 0 & penguncian readiness"],
-  ["2 — 4 SEP", "Audit baseline Instagram, LinkedIn, ads, positioning, dan audiens"],
-  ["8 — 15 SEP", "Website, CTA, SEO, dan funnel/CRM"],
-  ["19 — 27 SEP", "Produksi, QA, handover, dan rekomendasi Cycle 1"],
+  ["29 AGU", "Kickoff Cycle 0 & penguncian readiness", "Governance", "Terjadwal"],
+  ["2 — 4 SEP", "Audit baseline Instagram, LinkedIn, ads, positioning, dan audiens", "Content & performance", "Terjadwal"],
+  ["8 — 15 SEP", "Website, CTA, SEO, dan funnel/CRM", "Digital foundation", "Terjadwal"],
+  ["19 — 27 SEP", "Produksi, QA, handover, dan rekomendasi Cycle 1", "Delivery", "Terjadwal"],
 ];
 
 const completedWork = [
-  ["SETUP PROJECT", "Project Dr. Santi Story, Cycle 0, dan 10 item pekerjaan telah dibuat di tracker Diksilab."],
-  ["DOKUMEN KERJA", "Proposal kemitraan dan Cycle 0 execution pack telah ditinjau sebagai dasar pelaksanaan."],
-  ["DASHBOARD KLIEN", "Dashboard read-only untuk memantau cycle, progres, jadwal, dan pengeluaran ads telah diterbitkan."],
+  ["28 AGU", "Project Dr. Santi Story, Cycle 0, dan 10 item pekerjaan dibuat di tracker Diksilab.", "Setup project", "Selesai"],
+  ["28 AGU", "Proposal kemitraan dan Cycle 0 execution pack ditinjau sebagai dasar pelaksanaan.", "Dokumen kerja", "Selesai"],
+  ["28 AGU", "Dashboard read-only untuk cycle, progres, jadwal, dan pengeluaran ads diterbitkan.", "Dashboard klien", "Selesai"],
 ];
+
+function ActivityTable({ items }: { items: string[][] }) {
+  return <div className={styles.tableWrap}><table className={styles.activityTable}><thead><tr><th>Waktu</th><th>Aktivitas</th><th>Area</th><th>Status</th></tr></thead><tbody>{items.map(([date, activity, area, status]) => <tr key={`${date}-${area}`}><td>{date}</td><td>{activity}</td><td>{area}</td><td><span className={status === "Selesai" ? styles.done : styles.scheduled}>{status}</span></td></tr>)}</tbody></table></div>;
+}
 
 export function PublicMemberDashboard() {
   return (
@@ -43,11 +47,11 @@ export function PublicMemberDashboard() {
       </section>
       <section className={styles.note}>
         <div><p>YANG AKAN DILAKUKAN</p><h2>Agenda Cycle 0.</h2></div>
-        <p>{plannedWork.map(([date, task]) => <span key={task}><b>{date}</b> · {task}<br /></span>)}</p>
+        <ActivityTable items={plannedWork} />
       </section>
       <section className={styles.board}>
         <div className={styles.boardHead}><div><p>YANG TELAH DILAKUKAN</p><h2>Fondasi sudah disiapkan.</h2></div><span>UPDATE AWAL</span></div>
-        <div className={styles.channelGrid}>{completedWork.map(([label, detail]) => <article key={label}><p>{label}</p><h3>Selesai</h3><span>{detail}</span><div><i /> <small>TERCATAT</small></div></article>)}</div>
+        <ActivityTable items={completedWork} />
       </section>
       <footer>DIKSILAB CLIENT DASHBOARD · DATA PROYEK BERSIFAT RAHASIA</footer>
     </main>
