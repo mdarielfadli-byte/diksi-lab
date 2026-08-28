@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MemberPortal } from "./MemberPortal";
+import { PublicMemberDashboard } from "./PublicMemberDashboard";
 
 export const metadata: Metadata = {
   title: "Ruang Klien | Diksilab",
@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default function MemberArea() {
-  return <MemberPortal />;
+  return <PublicMemberDashboard />;
 }
