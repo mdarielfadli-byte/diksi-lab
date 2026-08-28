@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { PortalTools, type AdSpend, type DocumentItem, type WorkItem } from "./PortalTools";
@@ -20,8 +20,6 @@ function formatDate(value: string | null) { return value ? new Intl.DateTimeForm
 function formatActivityDate(value: string) { return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value)); }
 
 export function MemberPortal() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -60,13 +58,15 @@ export function MemberPortal() {
       const projectId = project?.id;
       const [cycleResponse, workResponse, activityResponse, spendResponse, documentResponse] = await Promise.all([
         projectId ? supabase.from("cycles").select("id, name, starts_on, ends_on, status, summary").eq("project_id", projectId).order("starts_on", { ascending: false }).limit(1) : Promise.resolve({ data: [], error: null }),
-        projectId ? supabase.from("work_items").select("id, project_id, cycle_id, channel, title, status, scheduled_for, owner_name, created_at").eq("project_id", projectId).order("scheduled_for", { ascending: true }) : Promise.resolve({ data: [], error: null }),
+        projectId ? supabase.from("project_tasks").select("id, project_id, cycle_id, workstream, title, status, due_on, created_at").eq("project_id", projectId).order("due_on", { ascending: true }) : Promise.resolve({ data: [], error: null }),
         projectId ? supabase.from("activities").select("id, detail, created_at").eq("project_id", projectId).order("created_at", { ascending: false }).limit(8) : Promise.resolve({ data: [], error: null }),
         projectId ? supabase.from("ad_spend").select("id, channel, budget, amount_spent, currency, recorded_on").eq("project_id", projectId).order("recorded_on", { ascending: false }) : Promise.resolve({ data: [], error: null }),
         supabase.from("documents").select("id, name, storage_path, content_type, byte_size, created_at").eq("company_id", company.id).order("created_at", { ascending: false }).limit(8),
       ]);
       for (const response of [cycleResponse, workResponse, activityResponse, spendResponse, documentResponse]) if (response.error) throw response.error;
-      setData({ company, project, cycle: (cycleResponse.data?.[0] ?? null) as Cycle | null, workItems: (workResponse.data ?? []) as WorkItem[], activities: (activityResponse.data ?? []) as Activity[], spend: (spendResponse.data ?? []) as AdSpend[], documents: (documentResponse.data ?? []) as DocumentItem[], role: membership.role, isSuperAdmin });
+      const projectTasks = (workResponse.data ?? []) as Array<{ id: string; project_id: string; cycle_id: string | null; workstream: string; title: string; status: string; due_on: string | null; created_at: string }>;
+      const workItems = projectTasks.map((task) => ({ id: task.id, project_id: task.project_id, cycle_id: task.cycle_id, channel: task.workstream, title: task.title, status: task.status, scheduled_for: task.due_on, owner_name: "Diksilab", created_at: task.created_at }));
+      setData({ company, project, cycle: (cycleResponse.data?.[0] ?? null) as Cycle | null, workItems, activities: (activityResponse.data ?? []) as Activity[], spend: (spendResponse.data ?? []) as AdSpend[], documents: (documentResponse.data ?? []) as DocumentItem[], role: membership.role, isSuperAdmin });
       setNotice("");
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Data portal belum dapat dimuat."); }
     finally { setLoading(false); }
@@ -79,15 +79,13 @@ export function MemberPortal() {
     return () => { window.clearTimeout(initialLoad); listener.subscription.unsubscribe(); };
   }, [loadPortal]);
 
-  async function signInWithPassword(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(""); setNotice(""); setSending(true);
+  async function signInWithGoogle() {
+    setError(""); setNotice(""); setSending(true);
     try {
-      const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({ email, password });
-      if (signInError) throw signInError;
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Email atau password belum dapat diverifikasi."); }
-    finally { setSending(false); }
+      const { error: oauthError } = await getSupabaseBrowserClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/member-area` } });
+      if (oauthError) throw oauthError;
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Masuk dengan Google belum dapat dimulai. Pastikan Google OAuth sudah diaktifkan di Supabase."); setSending(false); }
   }
-  async function sendMagicLink() { setError(""); setNotice(""); setSending(true); try { const { error: otpError } = await getSupabaseBrowserClient().auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/member-area`, shouldCreateUser: false } }); if (otpError) throw otpError; setNotice("Link masuk telah dikirim. Buka email Anda untuk melanjutkan."); } catch (caught) { setError(caught instanceof Error ? caught.message : "Link masuk belum dapat dikirim."); } finally { setSending(false); } }
   async function signOut() { await getSupabaseBrowserClient().auth.signOut(); setData(null); setNotice("Anda telah keluar dari ruang klien."); }
   async function uploadFile(file: File) {
     if (!data) return;
@@ -104,7 +102,7 @@ export function MemberPortal() {
   }
   const metrics = useMemo(() => ({ active: data?.workItems.filter((item) => !["done", "completed", "approved"].includes(item.status.toLowerCase())).length ?? 0, review: data?.workItems.filter((item) => /review|approve|menunggu/i.test(item.status)).length ?? 0 }), [data]);
   if (loading) return <main className={live.state}><div className={live.card}>Menyiapkan ruang klien Diksilab…</div></main>;
-  if (!userEmail) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>MEMBER AREA</p><h1>Masuk ke ruang kerja Anda.</h1><p>Tim Diksilab dan klien memakai halaman masuk yang sama; akses ditentukan otomatis oleh peran akun.</p><form onSubmit={signInWithPassword}><label htmlFor="portal-email">Email kerja</label><input id="portal-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nama@perusahaan.com" required /><label htmlFor="portal-password">Password</label><input id="portal-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="submit" disabled={sending}>{sending ? "Memeriksa…" : "Masuk"}</button><button type="button" onClick={() => void sendMagicLink()} disabled={sending}>Kirim link masuk</button></form>{notice ? <p className={live.notice}>{notice}</p> : null}{error ? <p className={live.error}>{error}</p> : null}</section></main>;
+  if (!userEmail) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>MEMBER AREA</p><h1>Masuk ke ruang kerja Anda.</h1><p>Tim Diksilab dan klien masuk dengan akun Google masing-masing. Akses proyek hanya aktif setelah ditugaskan oleh super admin.</p><button type="button" onClick={() => void signInWithGoogle()} disabled={sending}>{sending ? "Mengalihkan ke Google…" : "Lanjutkan dengan Google"}</button><small>Hanya akun Google yang telah diberi akses yang dapat membuka data proyek.</small>{notice ? <p className={live.notice}>{notice}</p> : null}{error ? <p className={live.error}>{error}</p> : null}</section></main>;
   if (!data) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>AKSES BELUM DIAKTIFKAN</p><h1>Halo, {userEmail}</h1><p>{notice || "Akses ruang klien Anda sedang diperiksa."}</p><button onClick={signOut}>Keluar</button>{error ? <p className={live.error}>{error}</p> : null}</section></main>;
   if (data.isSuperAdmin || ["admin", "team"].includes(data.role)) return <TeamWorkspace userEmail={userEmail} initialCompanyId={data.company.id} isSuperAdmin={data.isSuperAdmin} onSignOut={signOut} />;
   const displayName = userEmail.split("@")[0];
