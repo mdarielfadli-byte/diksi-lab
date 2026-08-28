@@ -7,6 +7,19 @@ const workstreams = [
   ["DIGITAL FOUNDATION", "8 — 27 SEP", "Build, QA & handover", "Website, landing page, SEO, CRM, collateral, QA, dan rekomendasi Cycle 1."],
 ];
 
+const plannedWork = [
+  ["29 AGU", "Kickoff Cycle 0 & penguncian readiness"],
+  ["2 — 4 SEP", "Audit baseline Instagram, LinkedIn, ads, positioning, dan audiens"],
+  ["8 — 15 SEP", "Website, CTA, SEO, dan funnel/CRM"],
+  ["19 — 27 SEP", "Produksi, QA, handover, dan rekomendasi Cycle 1"],
+];
+
+const completedWork = [
+  ["SETUP PROJECT", "Project Dr. Santi Story, Cycle 0, dan 10 item pekerjaan telah dibuat di tracker Diksilab."],
+  ["DOKUMEN KERJA", "Proposal kemitraan dan Cycle 0 execution pack telah ditinjau sebagai dasar pelaksanaan."],
+  ["DASHBOARD KLIEN", "Dashboard read-only untuk memantau cycle, progres, jadwal, dan pengeluaran ads telah diterbitkan."],
+];
+
 export function PublicMemberDashboard() {
   return (
     <main className={styles.page}>
@@ -29,8 +42,12 @@ export function PublicMemberDashboard() {
         <div className={styles.channelGrid}>{workstreams.map(([channel, date, title, text]) => <article key={channel}><p>{channel}</p><h3>{title}</h3><span>{text}</span><div><i /> <small>{date}</small></div></article>)}</div>
       </section>
       <section className={styles.note}>
-        <div><p>JADWAL KERJA AWAL</p><h2>Agenda yang sudah masuk tracker.</h2></div>
-        <p>29 Agu: kickoff &amp; readiness. 2—4 Sep: baseline konten, positioning, dan audiens. 8—15 Sep: website, CTA, SEO, paid-media audit, dan CRM. 19—27 Sep: produksi, QA, handover, serta review Cycle 1.</p>
+        <div><p>YANG AKAN DILAKUKAN</p><h2>Agenda Cycle 0.</h2></div>
+        <p>{plannedWork.map(([date, task]) => <span key={task}><b>{date}</b> · {task}<br /></span>)}</p>
+      </section>
+      <section className={styles.board}>
+        <div className={styles.boardHead}><div><p>YANG TELAH DILAKUKAN</p><h2>Fondasi sudah disiapkan.</h2></div><span>UPDATE AWAL</span></div>
+        <div className={styles.channelGrid}>{completedWork.map(([label, detail]) => <article key={label}><p>{label}</p><h3>Selesai</h3><span>{detail}</span><div><i /> <small>TERCATAT</small></div></article>)}</div>
       </section>
       <footer>DIKSILAB CLIENT DASHBOARD · DATA PROYEK BERSIFAT RAHASIA</footer>
     </main>
