@@ -40,3 +40,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Private client materials and local notes
+/Klien/
+/WORKSPACE_NOTES.md

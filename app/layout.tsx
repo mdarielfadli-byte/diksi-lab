@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://diksilab.com"),
   title: "Diksilab | Arah yang jelas, bisnis yang bergerak",
   description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.",
-  openGraph: { title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=3"] },
-  twitter: { card: "summary_large_image", title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=3"] },
+  openGraph: { title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=2"] },
+  twitter: { card: "summary_large_image", title: "Diksilab | Arah yang jelas, bisnis yang bergerak", description: "Partner strategi brand, pengalaman digital, dan performance marketing untuk UMKM dan startup yang ingin tumbuh lebih terarah.", images: ["/og.png?v=2"] },
 };
 export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="id"><body>{children}</body></html>}
