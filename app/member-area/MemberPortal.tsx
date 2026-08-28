@@ -21,6 +21,7 @@ function formatActivityDate(value: string) { return new Intl.DateTimeFormat("id-
 
 export function MemberPortal() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -78,15 +79,15 @@ export function MemberPortal() {
     return () => { window.clearTimeout(initialLoad); listener.subscription.unsubscribe(); };
   }, [loadPortal]);
 
-  async function sendMagicLink(event: FormEvent<HTMLFormElement>) {
+  async function signInWithPassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(""); setNotice(""); setSending(true);
     try {
-      const { error: otpError } = await getSupabaseBrowserClient().auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/member-area`, shouldCreateUser: false } });
-      if (otpError) throw otpError;
-      setNotice("Link masuk telah dikirim. Buka email Anda untuk melanjutkan.");
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Link masuk belum dapat dikirim."); }
+      const { error: signInError } = await getSupabaseBrowserClient().auth.signInWithPassword({ email, password });
+      if (signInError) throw signInError;
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "Email atau password belum dapat diverifikasi."); }
     finally { setSending(false); }
   }
+  async function sendMagicLink() { setError(""); setNotice(""); setSending(true); try { const { error: otpError } = await getSupabaseBrowserClient().auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}/member-area`, shouldCreateUser: false } }); if (otpError) throw otpError; setNotice("Link masuk telah dikirim. Buka email Anda untuk melanjutkan."); } catch (caught) { setError(caught instanceof Error ? caught.message : "Link masuk belum dapat dikirim."); } finally { setSending(false); } }
   async function signOut() { await getSupabaseBrowserClient().auth.signOut(); setData(null); setNotice("Anda telah keluar dari ruang klien."); }
   async function uploadFile(file: File) {
     if (!data) return;
@@ -103,7 +104,7 @@ export function MemberPortal() {
   }
   const metrics = useMemo(() => ({ active: data?.workItems.filter((item) => !["done", "completed", "approved"].includes(item.status.toLowerCase())).length ?? 0, review: data?.workItems.filter((item) => /review|approve|menunggu/i.test(item.status)).length ?? 0 }), [data]);
   if (loading) return <main className={live.state}><div className={live.card}>Menyiapkan ruang klien Diksilab…</div></main>;
-  if (!userEmail) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>RUANG KLIEN</p><h1>Masuk untuk melihat yang sedang bergerak.</h1><p>Gunakan alamat email yang telah diundang oleh tim Diksilab.</p><form onSubmit={sendMagicLink}><label htmlFor="portal-email">Email kerja</label><input id="portal-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nama@perusahaan.com" required /><button type="submit" disabled={sending}>{sending ? "Mengirim…" : "Kirim link masuk"}</button></form>{notice ? <p className={live.notice}>{notice}</p> : null}{error ? <p className={live.error}>{error}</p> : null}</section></main>;
+  if (!userEmail) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>MEMBER AREA</p><h1>Masuk ke ruang kerja Anda.</h1><p>Tim Diksilab dan klien memakai halaman masuk yang sama; akses ditentukan otomatis oleh peran akun.</p><form onSubmit={signInWithPassword}><label htmlFor="portal-email">Email kerja</label><input id="portal-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nama@perusahaan.com" required /><label htmlFor="portal-password">Password</label><input id="portal-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /><button type="submit" disabled={sending}>{sending ? "Memeriksa…" : "Masuk"}</button><button type="button" onClick={() => void sendMagicLink()} disabled={sending}>Kirim link masuk</button></form>{notice ? <p className={live.notice}>{notice}</p> : null}{error ? <p className={live.error}>{error}</p> : null}</section></main>;
   if (!data) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>AKSES BELUM DIAKTIFKAN</p><h1>Halo, {userEmail}</h1><p>{notice || "Akses ruang klien Anda sedang diperiksa."}</p><button onClick={signOut}>Keluar</button>{error ? <p className={live.error}>{error}</p> : null}</section></main>;
   if (data.isSuperAdmin || ["admin", "team"].includes(data.role)) return <TeamWorkspace userEmail={userEmail} initialCompanyId={data.company.id} isSuperAdmin={data.isSuperAdmin} onSignOut={signOut} />;
   const displayName = userEmail.split("@")[0];
