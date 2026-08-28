@@ -1,0 +1,17 @@
+.state { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #10100f; color: #f7f7ef; }
+.card { width: min(100%, 470px); padding: 42px; border: 1px solid #3b3b36; background: #191917; box-shadow: 16px 16px 0 #b8ff28; }
+.brand { display: inline-block; margin-bottom: 42px; color: #f7f7ef; font-size: 18px; font-weight: 900; letter-spacing: -.08em; text-decoration: none; }
+.brand span { color: #b8ff28; }
+.eyebrow { margin: 0 0 12px; color: #b8ff28; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+.card h1 { margin: 0 0 16px; font-size: clamp(30px, 5vw, 46px); line-height: .98; letter-spacing: -.06em; }
+.card p { color: #c2c2bb; line-height: 1.6; }
+.card form { display: grid; gap: 10px; margin-top: 28px; }
+.card label { font-size: 13px; font-weight: 700; }
+.card input { padding: 14px; border: 1px solid #4c4c47; background: #10100f; color: #fff; font: inherit; }
+.card button { border: 0; padding: 15px 18px; background: #b8ff28; color: #10100f; font: inherit; font-weight: 800; cursor: pointer; }
+.card button:disabled { opacity: .65; cursor: wait; }
+.notice, .error { margin-top: 18px; padding: 12px; font-size: 14px; }
+.notice { border-left: 3px solid #b8ff28; background: #242a16; }
+.error { border-left: 3px solid #ff6b5a; background: #321d1a; color: #ffd1ca !important; }
+.cycleSummary { max-width: 520px; padding: 22px 0; color: #66665f; font-size: 17px; line-height: 1.55; }
+.empty { padding: 16px 0; color: #777770; font-size: 14px; }

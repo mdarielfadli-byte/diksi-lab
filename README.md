@@ -4,8 +4,8 @@ Website digital agency Diksilab, dibangun dengan Next.js App Router dan dipublik
 
 ## Link proyek
 
-- Website: https://diksi-lab.vercel.app
-- Repository: https://github.com/muhammadfadli-dot/diksi-lab
+- Website: https://www.diksilab.com
+- Repository: https://github.com/mdarielfadli-byte/diksi-lab
 - Riwayat perubahan: [CHANGELOG.md](CHANGELOG.md)
 
 ## Stack
