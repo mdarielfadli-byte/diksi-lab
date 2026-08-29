@@ -46,7 +46,12 @@ export function ClientProjectActions({ companyId, projectId }: { companyId: stri
     setFiles((fileResponse.data ?? []) as FileItem[]);
   }, [projectId, selectedTaskId]);
 
-  useEffect(() => { void load().catch((caught) => setError(caught instanceof Error ? caught.message : "Data interaktif belum dapat dimuat.")); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void load().catch((caught) => setError(caught instanceof Error ? caught.message : "Data interaktif belum dapat dimuat."));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
   const selected = useMemo(() => tasks.find((task) => task.id === selectedTaskId) ?? null, [tasks, selectedTaskId]);
   const selectedApprovals = approvals.filter((item) => item.task_id === selectedTaskId);
 
@@ -80,7 +85,7 @@ export function ClientProjectActions({ companyId, projectId }: { companyId: stri
   }
 
   if (!projectId) return null;
-  return <section className={styles.panel} aria-label="Ruang aksi klien">
+  return <section id="client-actions" className={styles.panel} aria-label="Ruang aksi klien">
     <div className={styles.header}><div><p>RUANG AKSI KLIEN</p><h2>Review, approval, dan catatan</h2></div><span>{tasks.length} task aktif</span></div>
     <div className={styles.grid}>
       <div className={styles.taskList}>{tasks.map((task) => <button type="button" key={task.id} className={task.id === selectedTaskId ? styles.selected : ""} onClick={() => setSelectedTaskId(task.id)}><b>{task.title}</b><small>{label(task.workstream)} · {task.progress}% · {due(task.due_on)}</small></button>)}{!tasks.length ? <p>Belum ada task yang dipublikasikan tim.</p> : null}</div>

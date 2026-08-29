@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { ClientProjectActions } from "./ClientProjectActions";
+import { KickoffLaunchpad } from "./KickoffLaunchpad";
 import styles from "./public-member.module.css";
 import brand from "./brand-guideline.module.css";
 
@@ -53,7 +54,7 @@ export function PublicMemberDashboard({ companySlug, companyId, projectId, onSig
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.brand}>DIKSI<span>LAB</span></Link>
       <div className={styles.client}><span>DS</span><div><b>{data.client_name}</b><small>Client workspace</small></div></div>
-      <nav className={styles.nav} aria-label="Navigasi dashboard"><a className={styles.active} href="#overview">◈ <span>Dashboard</span></a><a href="#calendar">▥ <span>Kalender</span></a><a href="#roadmap">↗ <span>Roadmap</span></a><a href="#brand">✳ <span>Brand guideline</span></a><a href="#delivery">◫ <span>Workstreams</span></a><a href="#planned">◷ <span>Akan dilakukan</span></a><a href="#completed">✓ <span>Telah dilakukan</span></a><a href="#updates">◌ <span>Update &amp; approval</span></a><a href="#documents">▤ <span>Dokumen</span></a></nav>
+      <nav className={styles.nav} aria-label="Navigasi dashboard"><a className={styles.active} href="#overview">◈ <span>Dashboard</span></a><a href="#launchpad">✳ <span>Cycle 0 Launchpad</span></a><a href="#calendar">▥ <span>Kalender</span></a><a href="#roadmap">↗ <span>Roadmap</span></a><a href="#brand">✳ <span>Brand guideline</span></a><a href="#delivery">◫ <span>Workstreams</span></a><a href="#planned">◷ <span>Akan dilakukan</span></a><a href="#completed">✓ <span>Telah dilakukan</span></a><a href="#updates">◌ <span>Update &amp; approval</span></a><a href="#documents">▤ <span>Dokumen</span></a></nav>
       <div className={styles.sidebarFoot}><b>READ ONLY</b><span>Data disinkronkan otomatis dari tracker Diksilab.</span><button type="button" onClick={onSignOut}>Keluar</button></div>
     </aside>
     <section className={styles.main}>
@@ -64,6 +65,7 @@ export function PublicMemberDashboard({ companySlug, companyId, projectId, onSig
         <article className={styles.metricBlue}><small>PEKERJAAN TRACKER</small><strong>{data.tracker_count}</strong><span>{data.planned_work.length} agenda berikutnya</span><b>▥</b></article>
         <article className={styles.metricPink}><small>AMOUNT SPENT · ADS</small><strong>{rupiah(data.ads_spend)}</strong><span>Dicatat pada tracker</span><b>◌</b></article>
       </section>
+      <KickoffLaunchpad />
       <section id="calendar" className={styles.cyclePanel}><div className={styles.panelTitle}><div><p>KALENDER BULANAN</p><h2>Jadwal Cycle 0</h2></div><span>{formatDate(data.cycle_start)} — {formatDate(data.cycle_end)}</span></div><div className={styles.monthCalendar}><MonthlyCalendar year={2026} month={7} items={data.planned_work} /><MonthlyCalendar year={2026} month={8} items={data.planned_work} /></div><p className={styles.calendarNote}>Label pada tanggal menandai workstream yang terjadwal. Detail dan PIC tersedia di tabel agenda di bawah.</p></section>
       <section id="roadmap" className={styles.activityPanel}><div className={styles.panelTitle}><div><p>ROADMAP</p><h2>Arah pengembangan proyek</h2></div><span>2026 — 2027</span></div><div className={styles.roadmap}>{data.roadmap.map((item) => <article key={item.phase}><i className={styles[`roadmap_${item.status}`]} /><div><small>{item.phase} · {item.period}</small><h3>{item.title}</h3><p>{item.focus}</p></div><span>{item.status === "active" ? "Berjalan" : item.status === "next" ? "Berikutnya" : "Proyeksi"}</span></article>)}</div></section>
       <section id="brand" className={`${styles.activityPanel} ${brand.guideline}`}><div className={styles.panelTitle}><div><p>BRAND GUIDELINE</p><h2>Dr. Santi&apos;s Story visual system</h2></div><span>KEY VISUAL · AGUSTUS 2026</span></div><p className={brand.positioning}>{data.brand_guideline.positioning}</p><div className={brand.personality}>{data.brand_guideline.personality.map((item) => <span key={item}>{item}</span>)}</div><div className={brand.colorGrid}>{data.brand_guideline.colors.map((color) => <article key={color.hex}><i style={{ backgroundColor: color.hex }} /><b>{color.name}</b><code>{color.hex}</code><small>{color.role}</small></article>)}</div><div className={brand.rules}><article><small>TYPOGRAPHY</small><p>{data.brand_guideline.typography}</p></article><article><small>IMAGERY</small><p>{data.brand_guideline.imagery}</p></article><article><small>TONE &amp; CTA</small><p>{data.brand_guideline.tone} {data.brand_guideline.cta}</p></article></div></section>
