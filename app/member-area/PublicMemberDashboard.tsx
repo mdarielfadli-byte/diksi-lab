@@ -33,18 +33,18 @@ function MonthlyCalendar({ year, month, items }: { year: number; month: number; 
   return <section className={styles.monthCard}><h3>{monthTitle}</h3><div className={styles.weekdays}>{["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => <span key={day}>{day}</span>)}</div><div className={styles.monthGrid}>{cells.map((day, index) => { const date = day ? `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}` : ""; const events = items.filter((item) => item.scheduled_for === date); return <div key={`${date}-${index}`} className={day ? styles.day : styles.emptyDay}><b>{day}</b>{events.map((event) => <span key={event.activity} title={event.activity}>{event.area}</span>)}</div>; })}</div></section>;
 }
 
-export function PublicMemberDashboard() {
+export function PublicMemberDashboard({ companySlug, onSignOut }: { companySlug: string; onSignOut: () => void }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState("DiksiLab");
   const [error, setError] = useState("");
   const loadDashboard = useCallback(async () => {
     try {
-      const { data: row, error: queryError } = await getSupabaseBrowserClient().from("client_public_dashboards").select("payload, updated_at, updated_by").eq("slug", "dr-santi-story").single();
+      const { data: row, error: queryError } = await getSupabaseBrowserClient().from("client_public_dashboards").select("payload, updated_at, updated_by").eq("slug", companySlug).single();
       if (queryError) throw queryError;
       setData(row.payload as DashboardData); setUpdatedAt(row.updated_at); setUpdatedBy(row.updated_by); setError("");
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Dashboard belum dapat disinkronkan."); }
-  }, []);
+  }, [companySlug]);
   useEffect(() => { const initial = window.setTimeout(() => void loadDashboard(), 0); const interval = window.setInterval(() => void loadDashboard(), 60000); return () => { window.clearTimeout(initial); window.clearInterval(interval); }; }, [loadDashboard]);
   const approvalCount = useMemo(() => data?.updates.filter((item) => item.status === "needs_approval").length ?? 0, [data]);
   if (!data) return <main className={styles.loading}><b>DIKSI<span>LAB</span></b><p>{error || "Menyinkronkan dashboard klien…"}</p><button onClick={() => void loadDashboard()}>Coba lagi</button></main>;
@@ -53,7 +53,7 @@ export function PublicMemberDashboard() {
       <Link href="/" className={styles.brand}>DIKSI<span>LAB</span></Link>
       <div className={styles.client}><span>DS</span><div><b>{data.client_name}</b><small>Client workspace</small></div></div>
       <nav className={styles.nav} aria-label="Navigasi dashboard"><a className={styles.active} href="#overview">◈ <span>Dashboard</span></a><a href="#calendar">▥ <span>Kalender</span></a><a href="#roadmap">↗ <span>Roadmap</span></a><a href="#brand">✳ <span>Brand guideline</span></a><a href="#delivery">◫ <span>Workstreams</span></a><a href="#planned">◷ <span>Akan dilakukan</span></a><a href="#completed">✓ <span>Telah dilakukan</span></a><a href="#updates">◌ <span>Update &amp; approval</span></a><a href="#documents">▤ <span>Dokumen</span></a></nav>
-      <div className={styles.sidebarFoot}><b>READ ONLY</b><span>Data disinkronkan otomatis dari tracker Diksilab.</span></div>
+      <div className={styles.sidebarFoot}><b>READ ONLY</b><span>Data disinkronkan otomatis dari tracker Diksilab.</span><button type="button" onClick={onSignOut}>Keluar</button></div>
     </aside>
     <section className={styles.main}>
       <header className={styles.topbar}><div><p>CLIENT DASHBOARD / {data.cycle_name.toUpperCase()}</p><h1>{data.client_name}</h1></div><div className={styles.topStatus}><i /> Live workspace <span>Diperbarui {formatSync(updatedAt)} oleh {updatedBy}</span></div></header>
