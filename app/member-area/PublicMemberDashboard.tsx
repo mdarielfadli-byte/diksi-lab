@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
+import { ClientProjectActions } from "./ClientProjectActions";
 import styles from "./public-member.module.css";
 import brand from "./brand-guideline.module.css";
 
@@ -33,7 +34,7 @@ function MonthlyCalendar({ year, month, items }: { year: number; month: number; 
   return <section className={styles.monthCard}><h3>{monthTitle}</h3><div className={styles.weekdays}>{["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => <span key={day}>{day}</span>)}</div><div className={styles.monthGrid}>{cells.map((day, index) => { const date = day ? `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}` : ""; const events = items.filter((item) => item.scheduled_for === date); return <div key={`${date}-${index}`} className={day ? styles.day : styles.emptyDay}><b>{day}</b>{events.map((event) => <span key={event.activity} title={event.activity}>{event.area}</span>)}</div>; })}</div></section>;
 }
 
-export function PublicMemberDashboard({ companySlug, onSignOut }: { companySlug: string; onSignOut: () => void }) {
+export function PublicMemberDashboard({ companySlug, companyId, projectId, onSignOut }: { companySlug: string; companyId: string; projectId: string | null; onSignOut: () => void }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState("DiksiLab");
@@ -71,6 +72,7 @@ export function PublicMemberDashboard({ companySlug, onSignOut }: { companySlug:
       <section id="completed" className={styles.activityPanel}><div className={styles.panelTitle}><div><p>YANG TELAH DILAKUKAN</p><h2>Aktivitas yang tercatat</h2></div><span className={styles.badgeDone}>{data.completed_work.length} SELESAI</span></div><ActivityTable items={data.completed_work} completed /></section>
       <section id="updates" className={styles.dualGrid}><section className={styles.activityPanel}><div className={styles.panelTitle}><div><p>UPDATE &amp; APPROVAL</p><h2>Keputusan yang perlu dipantau</h2></div><span className={approvalCount ? styles.badgeSchedule : styles.badgeDone}>{approvalCount ? `${approvalCount} PERLU APPROVAL` : "TIDAK ADA"}</span></div><div className={styles.updateList}>{data.updates.map((item) => <article key={item.title}><span className={styles[`update_${item.status}`]}>{item.status === "needs_approval" ? "Perlu approval" : item.status === "approved" ? "Disetujui" : "Update"}</span><div><b>{item.title}</b><p>{item.detail}</p><small>PIC: {item.owner} · Target: {item.due}</small></div></article>)}</div><div className={brand.clientActions}>{data.client_actions.map((item) => <article key={item.title}><span className={item.status === "needs_approval" ? brand.actionApproval : brand.actionInput}>{item.status === "needs_approval" ? "Perlu persetujuan" : "Perlu input"}</span><div><b>{item.title}</b><p>{item.detail}</p></div><small>{item.due}</small></article>)}</div></section><section className={styles.activityPanel}><div className={styles.panelTitle}><div><p>KPI &amp; REPORTING</p><h2>Baseline Cycle 0</h2></div><span>AKAN DIPERBARUI</span></div><div className={styles.kpiGrid}>{data.metrics.map((metric) => <article key={metric.name}><small>{metric.group}</small><strong>{metric.value === null ? "—" : metric.unit === "IDR" ? rupiah(metric.value) : `${metric.value}${metric.unit}`}</strong><span>{metric.name}</span><i className={metric.status === "on_track" ? styles.kpiReady : ""}>{metric.status === "on_track" ? "Tercatat" : "Menunggu baseline"}</i></article>)}</div></section></section>
       <section id="documents" className={styles.activityPanel}><div className={styles.panelTitle}><div><p>DOKUMEN</p><h2>Katalog dokumen proyek</h2></div><span>FILE TETAP PRIVAT</span></div><div className={styles.documentGrid}>{data.documents.map((document) => <article key={document.title}><b>▤</b><div><strong>{document.title}</strong><span>{document.type} · {document.version}</span><small>{document.status} · diperbarui {document.updated}</small></div><i>Terproteksi</i></article>)}</div></section>
+      <ClientProjectActions companyId={companyId} projectId={projectId} />
       <footer>DIKSILAB CLIENT DASHBOARD <span>•</span> DATA PROYEK BERSIFAT RAHASIA</footer>
     </section>
   </main>;
