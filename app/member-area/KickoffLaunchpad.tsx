@@ -1,89 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import styles from "./kickoff-launchpad.module.css";
 
-type LaunchpadTab = "overview" | "brand" | "delivery" | "decisions" | "resources";
+type LaunchpadTab = "overview" | "brand" | "content" | "delivery" | "decisions" | "resources";
+type KickoffDocument = { id: string; name: string; storage_path: string; content_type: string | null; byte_size: number | null; created_at: string };
 
 const tabs: Array<{ id: LaunchpadTab; label: string }> = [
-  { id: "overview", label: "Mulai di sini" },
-  { id: "brand", label: "Arah brand & kreatif" },
-  { id: "delivery", label: "Execution blueprint" },
-  { id: "decisions", label: "Keputusan & input" },
-  { id: "resources", label: "Materi referensi" },
+  { id: "overview", label: "Mulai di sini" }, { id: "brand", label: "Brand system" }, { id: "content", label: "Content & growth" }, { id: "delivery", label: "Execution blueprint" }, { id: "decisions", label: "Decision desk" }, { id: "resources", label: "File kickoff" },
 ];
-
-const outcomes = [
-  ["01", "Inbound yang terarah", "Website dan landing page mengarahkan inquiry speaking, workshop, program sekolah, dan kolaborasi."],
-  ["02", "Lead tercatat & dirawat", "Form dan WhatsApp masuk ke Brevo CRM dengan sumber, status, PIC, dan alur follow-up yang jelas."],
-  ["03", "Demand tervalidasi", "SEO, konten, dan ads menguji keyword, pesan, audiens, CPL, serta konversi ke qualified lead."],
+const sourceDocuments = [
+  { name: "Dr_Santi_Story_Kickoff_Cycle_0.pdf", type: "PDF", title: "Kickoff & Cycle 0 Blueprint", detail: "Tujuan 90 hari, scope Website–Ads, measurement, CRM, roadmap, dan daftar input." },
+  { name: "DrSanti_Kickoff_Creative Concept_v8.pptx", type: "PPT", title: "Creative, Content & Brand Direction", detail: "Positioning, audience, content pillars, pilot konten, dan commercial guardrails." },
+  { name: "Key Visual (Dr Santis's Story) (1).pdf", type: "PDF", title: "Key Visual & Brand Guideline", detail: "Visual DNA, colour system, typography, imagery, tone of voice, dan CTA." },
 ];
+const size = (value: number | null) => value ? `${(value / 1024 / 1024).toFixed(value > 1024 * 1024 ? 1 : 2)} MB` : "Dokumen privat";
 
-const workstreams = [
-  ["Website", "Sitemap, wireframe, positioning, CTA, dan halaman program yang terasa seperti ruang baca hangat."],
-  ["Landing Page", "Halaman konversi untuk speaking, workshop, sekolah, dan inquiry yang relevan."],
-  ["SEO", "Technical baseline, keyword cluster, dan ritme 2–4 artikel per bulan."],
-  ["Brevo CRM", "Pipeline lead, tagging, owner, consent, dan SOP respons inquiry."],
-  ["Email Marketing", "Nurture sequence lima email: dari respons awal sampai ajakan percakapan berikutnya."],
-  ["Ads", "Testing Invite Dr. Santi, Parent Workshop, retargeting, dan lead magnet."],
-];
-
-const decisions = [
-  ["Domain & kanal utama", "Konfirmasi domain primer (.com / .id) dan akses domain-hosting.", "Perlu keputusan"],
-  ["Aset visual", "Logo, bio dan credential final, 15–20 foto, program, testimonial, serta izin penggunaan.", "Perlu input"],
-  ["Akses operasional", "Instagram/Meta, Brevo, dan alur respons inquiry yang disepakati.", "Perlu input"],
-  ["Approval model", "Tentukan final approver serta SLA feedback maksimal dua hari kerja.", "Perlu persetujuan"],
-];
-
-export function KickoffLaunchpad() {
+export function KickoffLaunchpad({ companyId, projectId }: { companyId: string; projectId: string | null }) {
   const [activeTab, setActiveTab] = useState<LaunchpadTab>("overview");
-
+  const [documents, setDocuments] = useState<KickoffDocument[]>([]);
+  const [notice, setNotice] = useState(""); const [error, setError] = useState("");
+  const loadDocuments = useCallback(async () => {
+    if (!projectId) return;
+    const { data, error: queryError } = await getSupabaseBrowserClient().from("documents").select("id,name,storage_path,content_type,byte_size,created_at").eq("company_id", companyId).eq("project_id", projectId).in("name", sourceDocuments.map((item) => item.name));
+    if (queryError) throw queryError;
+    setDocuments((data ?? []) as KickoffDocument[]);
+  }, [companyId, projectId]);
+  useEffect(() => { const timer = window.setTimeout(() => void loadDocuments().catch((caught) => setError(caught instanceof Error ? caught.message : "Dokumen kickoff belum dapat dimuat.")), 0); return () => window.clearTimeout(timer); }, [loadDocuments]);
+  async function download(document: KickoffDocument) {
+    setError(""); setNotice("");
+    try { const { data, error: signedUrlError } = await getSupabaseBrowserClient().storage.from("client-documents").createSignedUrl(document.storage_path, 60, { download: document.name }); if (signedUrlError) throw signedUrlError; window.open(data.signedUrl, "_blank", "noopener,noreferrer"); setNotice("File dibuka melalui tautan aman yang berlaku selama satu menit."); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "File belum dapat diunduh."); }
+  }
   return <section id="launchpad" className={styles.panel} aria-label="Cycle 0 Launchpad">
-    <header className={styles.hero}>
-      <div>
-        <p>CYCLE 0 LAUNCHPAD</p>
-        <h2>Ruang awal untuk menyatukan arah, keputusan, dan eksekusi.</h2>
-        <span>Kickoff 29 Agustus 2026 · Dr. Santi&apos;s Story × DiksiLab</span>
-      </div>
-      <div className={styles.readiness} aria-label="Status kesiapan kickoff">
-        <b>03 <small>/ 07</small></b>
-        <span>readiness terkonfirmasi</span>
-        <i><em /></i>
-      </div>
-    </header>
-
-    <div className={styles.tabs} role="tablist" aria-label="Materi Cycle 0 Launchpad">
-      {tabs.map((tab) => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={activeTab === tab.id ? styles.tabActive : ""} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>)}
-    </div>
-
-    {activeTab === "overview" ? <div className={styles.content} role="tabpanel">
-      <section className={styles.intro}><div><p className={styles.eyebrow}>NORTH STAR · 90 HARI</p><h3>Membangun fondasi digital yang hangat, kredibel, dan siap menghasilkan percakapan yang tepat.</h3></div><p>Cycle 0 mengunci strategi, sistem, dan keputusan produksi—agar website, konten, CRM, email, serta ads bergerak dalam satu arah.</p></section>
-      <div className={styles.outcomes}>{outcomes.map(([number, title, detail]) => <article key={number}><span>{number}</span><h4>{title}</h4><p>{detail}</p></article>)}</div>
-      <section className={styles.flow}><p className={styles.eyebrow}>CARA KERJA PROYEK</p><div><span>ARAH</span><i>→</i><span>BUILD</span><i>→</i><span>LAUNCH</span><i>→</i><span>OPTIMISE</span></div><small>Cycle 0 · Cycle 1 · Cycle 2 · Cycle 3</small></section>
-    </div> : null}
-
-    {activeTab === "brand" ? <div className={styles.content} role="tabpanel">
-      <section className={styles.intro}><div><p className={styles.eyebrow}>ARAH BRAND & KREATIF</p><h3>Warm authority—bukan hard sell.</h3></div><p>Dr. Santi&apos;s Story hadir sebagai ruang belajar yang matang: membaca sebagai pintu masuk untuk bertumbuh, mengasuh, memimpin, dan memahami kehidupan.</p></section>
-      <div className={styles.brandGrid}><article><small>POSITIONING</small><b>Read · Relate · Grow</b><p>Books open the conversation; pengalaman hidup dan lensa keilmuan membuatnya relevan pada keputusan sehari-hari.</p></article><article><small>PERSONALITY</small><b>Warm · Thoughtful · Grounded · Cultured</b><p>Expertise without preaching. Cerita personal dengan batas yang jelas dan klaim yang akurat.</p></article><article><small>CONTENT RHYTHM</small><b>4 video + 4 carousel / bulan</b><p>Pilot awal: dua post per minggu, dilengkapi stories untuk dialog, polling, dan follow-up.</p></article></div>
-      <section className={styles.pillars}><p className={styles.eyebrow}>CONTENT PILLARS</p>{[["Read & Grow", "35%", "Books, meaning, self-growth, lifelong learning"], ["Raise", "30%", "Raising readers, parenting, family conversations"], ["Live & Lead", "20%", "Identity, decisions, influence, leadership"], ["Explore", "15%", "Culture, place, travel, and the way we read the world"]].map(([name, amount, detail]) => <article key={name}><b>{amount}</b><div><h4>{name}</h4><p>{detail}</p></div></article>)}</section>
-    </div> : null}
-
-    {activeTab === "delivery" ? <div className={styles.content} role="tabpanel">
-      <section className={styles.intro}><div><p className={styles.eyebrow}>EXECUTION BLUEPRINT</p><h3>Enam workstream, satu perjalanan klien yang terhubung.</h3></div><p>Setiap workstream akan diterjemahkan menjadi task, PIC, tenggat, output, approval, dan progress live di dashboard.</p></section>
-      <div className={styles.workstreams}>{workstreams.map(([title, detail], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><h4>{title}</h4><p>{detail}</p></div></article>)}</div>
-      <section className={styles.pilot}><div><p className={styles.eyebrow}>MONTH 1 CONTENT PILOT</p><h3>8 post untuk mengunci suara dan respons audiens.</h3></div><ol><li>Why Reading Is More Than a Habit</li><li>Reading Shapes How We Grow, Raise, Lead & Explore</li><li>When Children Resist Reading</li><li>5 Questions After Reading With Your Child</li></ol></section>
-    </div> : null}
-
-    {activeTab === "decisions" ? <div className={styles.content} role="tabpanel">
-      <section className={styles.intro}><div><p className={styles.eyebrow}>DECISION DESK</p><h3>Hal-hal yang perlu dikunci agar produksi dapat bergerak tanpa hambatan.</h3></div><p>Konfirmasi atau berikan feedback melalui ruang aksi klien di bagian bawah dashboard. Setiap keputusan dapat ditautkan ke task dan jejak approval.</p></section>
-      <div className={styles.decisions}>{decisions.map(([title, detail, state]) => <article key={title}><span>{state}</span><div><h4>{title}</h4><p>{detail}</p></div><a href="#client-actions">Buka ruang aksi →</a></article>)}</div>
-      <p className={styles.sla}>Target kerja sama: feedback dan approval diberikan maksimal <b>2 hari kerja</b> agar timeline Cycle 0 tetap terjaga.</p>
-    </div> : null}
-
-    {activeTab === "resources" ? <div className={styles.content} role="tabpanel">
-      <section className={styles.intro}><div><p className={styles.eyebrow}>MATERI REFERENSI</p><h3>Tiga fondasi yang menjadi sumber arah Cycle 0.</h3></div><p>Ringkasan pada Launchpad disusun dari materi ini. File final dan versi produksi akan dibagikan melalui dokumen task terkait.</p></section>
-      <div className={styles.resources}><article><b>PDF</b><div><h4>Kickoff & Cycle 0 Blueprint</h4><p>Tujuan 90 hari, scope Website–Ads, measurement, CRM, roadmap, dan daftar input.</p></div><span>Execution pack</span></article><article><b>PPT</b><div><h4>Creative, Content & Brand Direction</h4><p>Positioning, audience, content pillars, pilot konten, dan commercial guardrails.</p></div><span>Creative concept</span></article><article><b>PDF</b><div><h4>Key Visual & Brand Guideline</h4><p>Visual DNA, colour system, typography, imagery, tone of voice, dan CTA.</p></div><span>Brand system</span></article></div>
-      <p className={styles.resourceNote}>Akses file tetap privat dan hanya tersedia bagi anggota proyek yang memiliki otorisasi.</p>
-    </div> : null}
+    <header className={styles.hero}><div><p>CYCLE 0 LAUNCHPAD</p><h2>Ruang kerja bersama untuk menyatukan arah, keputusan, dan eksekusi.</h2><span>Kickoff 29 Agustus 2026 · Dr. Santi&apos;s Story × DiksiLab</span></div><div className={styles.readiness}><b>03 <small>/ 07</small></b><span>readiness terkonfirmasi</span><i><em /></i></div></header>
+    <div className={styles.tabs} role="tablist" aria-label="Materi Cycle 0 Launchpad">{tabs.map((tab) => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} className={activeTab === tab.id ? styles.tabActive : ""} onClick={() => setActiveTab(tab.id)}>{tab.label}</button>)}</div>
+    {activeTab === "overview" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>NORTH STAR · 90 HARI</p><h3>Membangun fondasi digital yang hangat, kredibel, dan siap menghasilkan percakapan yang tepat.</h3></div><p>Cycle 0 mengunci strategi, sistem, dan keputusan produksi—agar website, konten, CRM, email, serta ads bergerak dalam satu arah.</p></section><div className={styles.outcomes}>{[["01", "Inbound yang terarah", "Website dan landing page mengarahkan inquiry speaking, workshop, program sekolah, dan kolaborasi."], ["02", "Lead tercatat & dirawat", "Form dan WhatsApp masuk ke Brevo CRM dengan sumber, status, PIC, dan alur follow-up yang jelas."], ["03", "Demand tervalidasi", "SEO, konten, dan ads menguji keyword, pesan, audiens, CPL, serta konversi ke qualified lead."]].map(([number, title, detail]) => <article key={number}><span>{number}</span><h4>{title}</h4><p>{detail}</p></article>)}</div><section className={styles.flow}><p className={styles.eyebrow}>CARA KERJA PROYEK</p><div><span>ARAH</span><i>→</i><span>BUILD</span><i>→</i><span>LAUNCH</span><i>→</i><span>OPTIMISE</span></div><small>Cycle 0 · Cycle 1 · Cycle 2 · Cycle 3</small></section><section className={styles.roadmapDetail}><p className={styles.eyebrow}>ROADMAP 90 HARI</p>{[["Cycle 0", "Strategi, sitemap, wireframe, domain, tracking, Brevo, draft email."], ["Cycle 1", "Build website & landing page, setup analytics dan CRM."], ["Cycle 2", "Launch ads, 2–4 aset SEO, nurture email, dan optimasi awal."], ["Cycle 3", "Evaluasi KPI, eksperimen lanjutan, dan reporting."]].map(([cycle, detail]) => <article key={cycle}><b>{cycle}</b><span>{detail}</span></article>)}</section></div> : null}
+    {activeTab === "brand" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>BRAND SYSTEM</p><h3>Warm authority—bukan hard sell.</h3></div><p>Dr. Santi&apos;s Story hadir sebagai ruang belajar yang matang: membaca sebagai pintu masuk untuk bertumbuh, mengasuh, memimpin, dan memahami kehidupan.</p></section><div className={styles.brandGrid}><article><small>POSITIONING</small><b>Read · Relate · Grow</b><p>Books open the conversation; pengalaman hidup dan lensa keilmuan membuatnya relevan pada keputusan sehari-hari.</p></article><article><small>PERSONALITY</small><b>Warm · Thoughtful · Grounded · Cultured</b><p>Expertise without preaching. Cerita personal dengan batas jelas dan klaim yang akurat.</p></article><article><small>COPY FORMULA</small><b>Tension → perspective → example → invitation</b><p>Mulai dari situasi nyata, berikan satu perspektif, lalu ajak audiens mengambil langkah relevan.</p></article></div><section className={styles.colorSystem}><p className={styles.eyebrow}>COLOUR SYSTEM</p>{[["Emerald", "#21866F", "Brand field, headings, CTA"], ["Forest", "#1F5B4C", "Premium, authority"], ["Warm Cream", "#F4F0E7", "Canvas, long-form reading"], ["Taupe", "#B3977A", "Refined neutral"], ["Gold", "#F1C24B", "Ritual marker, highlight"], ["Coral", "#E45B4B", "Human energy, small accent"]].map(([name, hex, role]) => <article key={hex}><i style={{ backgroundColor: hex }} /><b>{name}</b><code>{hex}</code><small>{role}</small></article>)}</section><div className={styles.rules}><article><small>TYPOGRAPHY</small><p>Rounded geometric sans (Nunito Sans/DM Sans) sebagai suara utama; Source Serif/Georgia hanya untuk kutipan reflektif. Sentence case, body web 16–18 px, dan ruang napas longgar.</p></article><article><small>IMAGERY & MOTIF</small><p>Natural light, buku dalam konteks, ruang, tangan, keluarga, komunitas, dan percakapan nyata. Hindari hard flash, gambar stage generik, overlay ramai, atau teks di atas wajah. Starburst digunakan hanya untuk insight atau ritual penting.</p></article><article><small>PAGE SEQUENCE</small><p>Promise → why it matters → what is included → proof → next step. CTA utama: “Invite Dr Santi” untuk sekolah/event; “Start a reading conversation” untuk keluarga/komunitas.</p></article></div><section className={styles.packageGrid}><p className={styles.eyebrow}>PACKAGE ARCHITECTURE</p>{[["Essential", "Starting point", "Emerald"], ["Signature", "Deeper ritual + system", "Forest + Gold"], ["Premium", "Tailored experience", "Taupe + Emerald"]].map(([name, detail, color]) => <article key={name}><b>{name}</b><span>{detail}</span><small>{color}</small></article>)}</section></div> : null}
+    {activeTab === "content" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>CONTENT & GROWTH</p><h3>Kepercayaan menghubungkan perhatian dengan peluang yang tepat.</h3></div><p>Reach membuat Dr. Santi dikenal; point of view yang konsisten membangun trust, engagement, dan peluang komersial yang natural.</p></section><section className={styles.pillars}><p className={styles.eyebrow}>CONTENT PILLARS</p>{[["Read & Grow", "35%", "Books, meaning, self-growth, lifelong learning"], ["Raise", "30%", "Raising readers, parenting, family conversations"], ["Live & Lead", "20%", "Identity, decisions, influence, leadership"], ["Explore", "15%", "Culture, place, travel, and the way we read the world"]].map(([name, amount, detail]) => <article key={name}><b>{amount}</b><div><h4>{name}</h4><p>{detail}</p></div></article>)}</section><section className={styles.pilotFull}><div><p className={styles.eyebrow}>MONTH 1 PILOT · 8 POSTS</p><h3>Mengunci voice, topik, format, dan respons audiens sebelum menambah volume.</h3><span>2× feed/minggu · Selasa & Jumat · 3–5 hari stories/minggu</span></div><ol>{[["Video", "Why Reading Is More Than a Habit", "Reading membantu kita memahami hidup."], ["Carousel", "Reading Shapes How We Grow, Raise, Lead & Explore", "Memperkenalkan framework brand."], ["Video", "When Children Resist Reading", "Reframe readiness, choice, dan experience."], ["Carousel", "5 Questions After Reading With Your Child", "Prompt praktis yang saveable."], ["Video", "A Mother Can Keep Growing", "Relatable mature momfluencer."], ["Video", "A Book Changed How I Made a Decision", "Reflective authority."], ["Carousel", "3 Books for a New Season", "Saveable curation + partner fit."], ["Carousel", "What Shaped Me This Month", "Recurring IP untuk memperluas dunia Dr. Santi."]].map(([format, title, role]) => <li key={title}><small>{format}</small><b>{title}</b><span>{role}</span></li>)}</ol></section><div className={styles.brandGrid}><article><small>VOICE DELIVERY</small><b>Berbicara kepada satu orang.</b><p>Open dengan situasi/tension familiar, develop satu ide dengan contoh nyata, lalu close dengan insight atau pertanyaan—bukan kuliah.</p></article><article><small>VISUAL DIRECTION</small><b>Editorial warmth, not content clutter.</b><p>Tosca sebagai signature environment; cream memberi ruang; terracotta sebagai accent; deep teal menjaga hierarchy. Gunakan close/medium shot dan buku dalam lived context.</p></article><article><small>COMMERCIAL PATHWAYS</small><b>Monetise the territory, not just reach.</b><p>Endorsement, workshop/coaching, speaking/collaboration, dan owned products seperti reading guide, journal, book club, atau class.</p></article></div><section className={styles.guardrails}><p className={styles.eyebrow}>KICKOFF OUTCOME</p><span>01 Lock brand core</span><span>02 Approve 8-post pilot</span><span>03 Confirm story input, shoot date & review owner</span><span>04 Set success signals and endorsement guardrails</span></section></div> : null}
+    {activeTab === "delivery" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>EXECUTION BLUEPRINT</p><h3>Enam workstream, satu perjalanan klien yang terhubung.</h3></div><p>Setiap workstream diterjemahkan menjadi task, PIC, tenggat, output, approval, dan progress live di dashboard.</p></section><div className={styles.workstreams}>{[["Website", "Homepage dengan Promise/Fit/Programs/Proof/Inquiry; navigasi Home, About, Programs, Resources, Speaking/Workshop, Contact; CTA Explore Programs dan Invite Dr Santi."], ["Landing Page", "Landing page speaking/workshop dengan audience fit, outcome, tier, proof, form inquiry, dan WhatsApp follow-up."], ["SEO", "Technical baseline, keyword cluster Read & Grow/Raise/Live & Lead/Explore, dan 2–4 artikel per bulan."], ["Brevo CRM", "Pipeline New Lead → Contacted → Qualified → Meeting/Proposal → Won/Lost, field source/status/PIC/consent."], ["Email Marketing", "Nurture: 0 menit, +2, +5, +9, dan +14 hari—mengubah inquiry menjadi percakapan yang relevan."], ["Ads", "Test Invite Dr Santi, Parent Workshop, Retargeting, dan ebook/lead magnet; ukur CPL, conversion, dan qualified lead."]].map(([title, detail], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><h4>{title}</h4><p>{detail}</p></div></article>)}</div><section className={styles.deliveryGrid}><article><p className={styles.eyebrow}>MEASUREMENT</p><b>GA4 · Search Console · Pixel · Events · UTM</b><p>Tracking dikunci sebelum launch: view, CTA click, form submit, WhatsApp click, lead source, cost per lead, dan conversion rate.</p></article><article><p className={styles.eyebrow}>DOMAIN</p><b>.com atau .id sebagai primary</b><p>Rekomendasi: amankan keduanya, lalu tetapkan satu domain primer untuk SEO, email, dan materi promosi.</p></article><article><p className={styles.eyebrow}>EMAIL KPI</p><b>Delivery · open · click · reply · meeting</b><p>Sequence ditinjau bersama berdasarkan kualitas inquiry dan langkah follow-up, bukan hanya vanity metrics.</p></article></section></div> : null}
+    {activeTab === "decisions" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>DECISION DESK</p><h3>Hal-hal yang perlu dikunci agar produksi bergerak tanpa hambatan.</h3></div><p>Konfirmasi atau beri feedback melalui ruang aksi klien di bagian bawah dashboard. Setiap keputusan dapat ditautkan ke task dan jejak approval.</p></section><div className={styles.decisions}>{[["Domain & kanal utama", "Konfirmasi domain primer (.com / .id) dan akses domain-hosting.", "Perlu keputusan"], ["Aset visual", "Logo, bio/credential final, 15–20 foto, program, testimonial, serta izin penggunaan.", "Perlu input"], ["Akses operasional", "Instagram/Meta, Brevo, analytics, inquiry channel, dan akses terkait produksi.", "Perlu input"], ["Proof & program", "Deskripsi program, outcome, audience fit, credential, testimonial, dan batas klaim yang dapat dipublikasikan.", "Perlu input"], ["Approval model", "Tentukan final approver dan SLA feedback maksimal dua hari kerja.", "Perlu persetujuan"], ["Commercial guardrails", "Kategori brand yang sesuai, sinyal keberhasilan, serta kategori endorsement yang dihindari.", "Perlu persetujuan"]].map(([title, detail, state]) => <article key={title}><span>{state}</span><div><h4>{title}</h4><p>{detail}</p></div><a href="#client-actions">Buka ruang aksi →</a></article>)}</div><p className={styles.sla}>Target kerja sama: feedback dan approval diberikan maksimal <b>2 hari kerja</b> agar timeline Cycle 0 tetap terjaga.</p></div> : null}
+    {activeTab === "resources" ? <div className={styles.content} role="tabpanel"><section className={styles.intro}><div><p className={styles.eyebrow}>FILE KICKOFF</p><h3>Dokumen sumber yang dapat diunduh secara privat.</h3></div><p>Hanya anggota proyek yang memiliki akses dapat membuat tautan download sementara. Tautan tidak dapat dipakai sebagai file publik.</p></section><div className={styles.resources}>{sourceDocuments.map((source) => { const document = documents.find((item) => item.name === source.name); return <article key={source.name}><b>{source.type}</b><div><h4>{source.title}</h4><p>{source.detail}</p><small>{document ? `${size(document.byte_size)} · tersedia untuk proyek ini` : "Sedang menyiapkan file privat"}</small></div>{document ? <button type="button" onClick={() => void download(document)}>Unduh file ↓</button> : <span>Belum tersedia</span>}</article>; })}</div>{notice ? <p className={styles.notice}>{notice}</p> : null}{error ? <p className={styles.error}>{error}</p> : null}</div> : null}
   </section>;
 }
