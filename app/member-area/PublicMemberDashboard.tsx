@@ -35,7 +35,7 @@ function MonthlyCalendar({ year, month, items }: { year: number; month: number; 
   return <section className={styles.monthCard}><h3>{monthTitle}</h3><div className={styles.weekdays}>{["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => <span key={day}>{day}</span>)}</div><div className={styles.monthGrid}>{cells.map((day, index) => { const date = day ? `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}` : ""; const events = items.filter((item) => item.scheduled_for === date); return <div key={`${date}-${index}`} className={day ? styles.day : styles.emptyDay}><b>{day}</b>{events.map((event) => <span key={event.activity} title={event.activity}>{event.area}</span>)}</div>; })}</div></section>;
 }
 
-export function PublicMemberDashboard({ companySlug, companyId, projectId, onSignOut }: { companySlug: string; companyId: string; projectId: string | null; onSignOut: () => void }) {
+export function PublicMemberDashboard({ companySlug, companyId, projectId, onSignOut, onBackToWorkspace }: { companySlug: string; companyId: string; projectId: string | null; onSignOut: () => void; onBackToWorkspace?: () => void }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState("DiksiLab");
@@ -55,7 +55,7 @@ export function PublicMemberDashboard({ companySlug, companyId, projectId, onSig
       <Link href="/" className={styles.brand}>DIKSI<span>LAB</span></Link>
       <div className={styles.client}><span>DS</span><div><b>{data.client_name}</b><small>Client workspace</small></div></div>
       <nav className={styles.nav} aria-label="Navigasi dashboard"><a className={styles.active} href="#overview">◈ <span>Dashboard</span></a><a href="#launchpad">✳ <span>Cycle 0 Launchpad</span></a><a href="#calendar">▥ <span>Kalender</span></a><a href="#roadmap">↗ <span>Roadmap</span></a><a href="#brand">✳ <span>Brand guideline</span></a><a href="#delivery">◫ <span>Workstreams</span></a><a href="#planned">◷ <span>Akan dilakukan</span></a><a href="#completed">✓ <span>Telah dilakukan</span></a><a href="#updates">◌ <span>Update &amp; approval</span></a><a href="#documents">▤ <span>Dokumen</span></a></nav>
-      <div className={styles.sidebarFoot}><b>READ ONLY</b><span>Data disinkronkan otomatis dari tracker Diksilab.</span><button type="button" onClick={onSignOut}>Keluar</button></div>
+      <div className={styles.sidebarFoot}><b>READ ONLY</b><span>Data disinkronkan otomatis dari tracker Diksilab.</span>{onBackToWorkspace ? <button type="button" onClick={onBackToWorkspace}>← Ruang kerja Diksilab</button> : null}<button type="button" onClick={onSignOut}>Keluar</button></div>
     </aside>
     <section className={styles.main}>
       <header className={styles.topbar}><div><p>CLIENT DASHBOARD / {data.cycle_name.toUpperCase()}</p><h1>{data.client_name}</h1></div><div className={styles.topStatus}><i /> Live workspace <span>Diperbarui {formatSync(updatedAt)} oleh {updatedBy}</span></div></header>
