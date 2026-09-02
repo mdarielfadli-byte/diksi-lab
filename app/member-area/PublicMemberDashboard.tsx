@@ -88,6 +88,13 @@ type ApprovalRow = {
   created_at: string;
 };
 type SpendRow = { amount_spent: number | string };
+type ProjectMeetingRow = {
+  id: string;
+  title: string;
+  meeting_at: string;
+  agenda: string;
+  status: "planned" | "completed" | "cancelled";
+};
 type DashboardData = {
   client_name: string;
   project_name: string;
@@ -98,6 +105,7 @@ type DashboardData = {
   progress: number;
   ads_spend: number;
   tracker_count: number;
+  calendar_work: WorkItem[];
   planned_work: WorkItem[];
   completed_work: WorkItem[];
   updates: Update[];
@@ -242,7 +250,6 @@ export function PublicMemberDashboard({
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState("DiksiLab");
   const [error, setError] = useState("");
-  const [calendarCursor, setCalendarCursor] = useState<Date | null>(null);
   const loadDashboard = useCallback(async () => {
     try {
       if (!projectId) throw new Error("Proyek klien belum tersedia.");
@@ -252,6 +259,7 @@ export function PublicMemberDashboard({
         projectResponse,
         cycleResponse,
         taskResponse,
+        meetingResponse,
         approvalResponse,
         spendResponse,
       ] = await Promise.all([
@@ -279,6 +287,12 @@ export function PublicMemberDashboard({
           .eq("project_id", projectId)
           .order("due_on", { ascending: true }),
         supabase
+          .from("project_meetings")
+          .select("id,title,meeting_at,agenda,status")
+          .eq("project_id", projectId)
+          .neq("status", "cancelled")
+          .order("meeting_at", { ascending: true }),
+        supabase
           .from("task_approvals")
           .select("id,task_id,status,request_note,created_at")
           .eq("company_id", companyId)
@@ -293,6 +307,7 @@ export function PublicMemberDashboard({
         projectResponse,
         cycleResponse,
         taskResponse,
+        meetingResponse,
         approvalResponse,
         spendResponse,
       ])
@@ -316,6 +331,7 @@ export function PublicMemberDashboard({
         : { data: null, error: null };
       if (reportResponse.error) throw reportResponse.error;
       const taskRows = (taskResponse.data ?? []) as ProjectTaskRow[];
+      const meetingRows = (meetingResponse.data ?? []) as ProjectMeetingRow[];
       const completed = taskRows.filter((task) =>
         ["approved", "completed"].includes(task.status),
       );
@@ -330,6 +346,19 @@ export function PublicMemberDashboard({
         status: task.status.replaceAll("_", " "),
         owner: task.owner_label || "Diksilab",
       });
+      const meetingWork: WorkItem[] = meetingRows.map((meeting) => ({
+        date: new Intl.DateTimeFormat("id-ID", {
+          day: "numeric",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(meeting.meeting_at)),
+        scheduled_for: meeting.meeting_at.slice(0, 10),
+        activity: meeting.title,
+        area: meeting.agenda || "Meeting proyek",
+        status: meeting.status === "completed" ? "selesai" : "meeting",
+        owner: "Diksilab",
+      }));
       const taskById = new Map(taskRows.map((task) => [task.id, task]));
       const updates: Update[] = ((approvalResponse.data ?? []) as ApprovalRow[])
         .slice(0, 6)
@@ -375,6 +404,10 @@ export function PublicMemberDashboard({
         progress: project.progress,
         ads_spend: adsSpend,
         tracker_count: taskRows.length,
+        calendar_work: [...planned.map(toWorkItem), ...meetingWork].sort(
+          (left, right) =>
+            left.scheduled_for.localeCompare(right.scheduled_for),
+        ),
         planned_work: planned.map(toWorkItem),
         completed_work: completed.map(toWorkItem),
         updates,
@@ -428,15 +461,17 @@ export function PublicMemberDashboard({
       window.clearInterval(interval);
     };
   }, [loadDashboard]);
-  useEffect(() => {
-    if (data?.cycle_start)
-      setCalendarCursor(new Date(`${data.cycle_start}T00:00:00`));
-  }, [data?.cycle_start]);
   const approvalCount = useMemo(
     () =>
       data?.updates.filter((item) => item.status === "needs_approval").length ??
       0,
     [data],
+  );
+  const currentCalendarMonth = new Date();
+  const nextCalendarMonth = new Date(
+    currentCalendarMonth.getFullYear(),
+    currentCalendarMonth.getMonth() + 1,
+    1,
   );
   if (!data)
     return (
@@ -555,48 +590,25 @@ export function PublicMemberDashboard({
           <div className={styles.panelTitle}>
             <div>
               <p>KALENDER BULANAN</p>
-              <h2>Jadwal {data.cycle_name}</h2>
+              <h2>Jadwal saat ini dan bulan berikutnya</h2>
             </div>
-            <span>
-              {formatDate(data.cycle_start)} — {formatDate(data.cycle_end)}
-            </span>
+            <span>Task dan meeting yang dibagikan tim</span>
           </div>
           <div className={styles.monthCalendar}>
-            <button
-              type="button"
-              onClick={() =>
-                setCalendarCursor((value) =>
-                  value
-                    ? new Date(value.getFullYear(), value.getMonth() - 1, 1)
-                    : value,
-                )
-              }
-            >
-              ← Bulan sebelumnya
-            </button>
-            {calendarCursor ? (
-              <MonthlyCalendar
-                year={calendarCursor.getFullYear()}
-                month={calendarCursor.getMonth()}
-                items={data.planned_work}
-              />
-            ) : null}
-            <button
-              type="button"
-              onClick={() =>
-                setCalendarCursor((value) =>
-                  value
-                    ? new Date(value.getFullYear(), value.getMonth() + 1, 1)
-                    : value,
-                )
-              }
-            >
-              Bulan berikutnya →
-            </button>
+            <MonthlyCalendar
+              year={currentCalendarMonth.getFullYear()}
+              month={currentCalendarMonth.getMonth()}
+              items={data.calendar_work}
+            />
+            <MonthlyCalendar
+              year={nextCalendarMonth.getFullYear()}
+              month={nextCalendarMonth.getMonth()}
+              items={data.calendar_work}
+            />
           </div>
           <p className={styles.calendarNote}>
-            Label pada tanggal menandai workstream yang terjadwal. Detail dan
-            PIC tersedia di tabel agenda di bawah.
+            Kalender otomatis menampilkan bulan berjalan dan bulan berikutnya.
+            Meeting ditandai bersama task yang dibagikan oleh tim Diksilab.
           </p>
         </section>
         <section id="cycle-report" className={styles.activityPanel}>
