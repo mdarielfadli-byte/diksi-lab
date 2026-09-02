@@ -68,6 +68,32 @@ type CycleReport = {
   blockers: string;
   next_focus: string;
 };
+type Meeting = {
+  id: string;
+  title: string;
+  meeting_at: string;
+  agenda: string;
+  discussion_points: string;
+  minutes_of_meeting: string;
+  status: "planned" | "completed" | "cancelled";
+  client_visible: boolean;
+};
+type MeetingActionItem = {
+  id: string;
+  meeting_id: string;
+  title: string;
+  owner_label: string | null;
+  due_on: string | null;
+  is_done: boolean;
+  client_visible: boolean;
+};
+type MeetingFile = {
+  id: string;
+  meeting_id: string;
+  name: string;
+  storage_path: string;
+  client_visible: boolean;
+};
 
 const workstreams = [
   "website",
@@ -102,6 +128,11 @@ const timestamp = (value: string) =>
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(value));
+const dateTimeInput = (value: string) => {
+  const local = new Date(value);
+  const offset = local.getTimezoneOffset() * 60_000;
+  return new Date(local.getTime() - offset).toISOString().slice(0, 16);
+};
 
 export function TeamWorkspace({
   userEmail,
@@ -129,10 +160,15 @@ export function TeamWorkspace({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [audit, setAudit] = useState<Audit[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState("");
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [selectedMeetingId, setSelectedMeetingId] = useState("");
+  const [meetingActions, setMeetingActions] = useState<MeetingActionItem[]>([]);
+  const [meetingFiles, setMeetingFiles] = useState<MeetingFile[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const updateFileInput = useRef<HTMLInputElement>(null);
+  const meetingFileInput = useRef<HTMLInputElement>(null);
 
   const loadWorkspace = useCallback(async () => {
     const supabase = getSupabaseBrowserClient();
@@ -174,6 +210,7 @@ export function TeamWorkspace({
     if (!nextCompanyId) {
       setProjects([]);
       setTasks([]);
+      setMeetings([]);
       return;
     }
     const projectResponse = await supabase
@@ -193,46 +230,62 @@ export function TeamWorkspace({
     if (!nextProjectId) {
       setTasks([]);
       setCycles([]);
+      setMeetings([]);
       return;
     }
-    const [taskResponse, cycleResponse, auditResponse, notificationResponse] =
-      await Promise.all([
-        supabase
-          .from("project_tasks")
-          .select(
-            "id, title, description, owner_label, blocked_reason, workstream, status, priority, progress, due_on, client_visible, created_at",
-          )
-          .eq("project_id", nextProjectId)
-          .order("due_on", { ascending: true }),
-        supabase
-          .from("cycles")
-          .select("id, name")
-          .eq("project_id", nextProjectId)
-          .order("starts_on", { ascending: false })
-          .limit(1),
-        supabase
-          .from("audit_logs")
-          .select("id, action, detail, created_at")
-          .eq("project_id", nextProjectId)
-          .order("created_at", { ascending: false })
-          .limit(8),
-        supabase
-          .from("notifications")
-          .select("id, title, body, read_at, created_at")
-          .order("created_at", { ascending: false })
-          .limit(6),
-      ]);
+    const [
+      taskResponse,
+      cycleResponse,
+      meetingResponse,
+      auditResponse,
+      notificationResponse,
+    ] = await Promise.all([
+      supabase
+        .from("project_tasks")
+        .select(
+          "id, title, description, owner_label, blocked_reason, workstream, status, priority, progress, due_on, client_visible, created_at",
+        )
+        .eq("project_id", nextProjectId)
+        .order("due_on", { ascending: true }),
+      supabase
+        .from("cycles")
+        .select("id, name")
+        .eq("project_id", nextProjectId)
+        .order("starts_on", { ascending: false })
+        .limit(1),
+      supabase
+        .from("project_meetings")
+        .select(
+          "id,title,meeting_at,agenda,discussion_points,minutes_of_meeting,status,client_visible",
+        )
+        .eq("project_id", nextProjectId)
+        .order("meeting_at", { ascending: false }),
+      supabase
+        .from("audit_logs")
+        .select("id, action, detail, created_at")
+        .eq("project_id", nextProjectId)
+        .order("created_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("notifications")
+        .select("id, title, body, read_at, created_at")
+        .order("created_at", { ascending: false })
+        .limit(6),
+    ]);
     for (const response of [
       taskResponse,
       cycleResponse,
+      meetingResponse,
       auditResponse,
       notificationResponse,
     ])
       if (response.error) throw response.error;
     const nextTasks = (taskResponse.data ?? []) as Task[];
     const nextCycles = (cycleResponse.data ?? []) as Cycle[];
+    const nextMeetings = (meetingResponse.data ?? []) as Meeting[];
     setTasks(nextTasks);
     setCycles(nextCycles);
+    setMeetings(nextMeetings);
     setAudit((auditResponse.data ?? []) as Audit[]);
     setNotifications((notificationResponse.data ?? []) as Notification[]);
     if (nextCycles[0]) {
@@ -248,36 +301,69 @@ export function TeamWorkspace({
       ? selectedTaskId
       : (nextTasks[0]?.id ?? "");
     setSelectedTaskId(nextTaskId);
+    const nextMeetingId = nextMeetings.some(
+      (meeting) => meeting.id === selectedMeetingId,
+    )
+      ? selectedMeetingId
+      : (nextMeetings[0]?.id ?? "");
+    setSelectedMeetingId(nextMeetingId);
+    if (nextMeetingId) {
+      const [meetingActionResponse, meetingFileResponse] = await Promise.all([
+        supabase
+          .from("meeting_action_items")
+          .select(
+            "id,meeting_id,title,owner_label,due_on,is_done,client_visible",
+          )
+          .eq("meeting_id", nextMeetingId)
+          .order("is_done", { ascending: true })
+          .order("due_on", { ascending: true }),
+        supabase
+          .from("meeting_files")
+          .select("id,meeting_id,name,storage_path,client_visible")
+          .eq("meeting_id", nextMeetingId)
+          .order("created_at", { ascending: false }),
+      ]);
+      if (meetingActionResponse.error) throw meetingActionResponse.error;
+      if (meetingFileResponse.error) throw meetingFileResponse.error;
+      setMeetingActions(
+        (meetingActionResponse.data ?? []) as MeetingActionItem[],
+      );
+      setMeetingFiles((meetingFileResponse.data ?? []) as MeetingFile[]);
+    } else {
+      setMeetingActions([]);
+      setMeetingFiles([]);
+    }
     if (!nextTaskId) {
       setComments([]);
       setApprovals([]);
-      return;
+      setChecklist([]);
+    } else {
+      const [commentResponse, approvalResponse, checklistResponse] =
+        await Promise.all([
+          supabase
+            .from("task_comments")
+            .select("id, body, visibility, created_at")
+            .eq("task_id", nextTaskId)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("task_approvals")
+            .select("id, status, request_note, created_at")
+            .eq("task_id", nextTaskId)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("task_checklist_items")
+            .select("id,task_id,label,is_done,position")
+            .eq("task_id", nextTaskId)
+            .order("position", { ascending: true }),
+        ]);
+      if (commentResponse.error) throw commentResponse.error;
+      if (approvalResponse.error) throw approvalResponse.error;
+      if (checklistResponse.error) throw checklistResponse.error;
+      setComments((commentResponse.data ?? []) as Comment[]);
+      setApprovals((approvalResponse.data ?? []) as Approval[]);
+      setChecklist((checklistResponse.data ?? []) as ChecklistItem[]);
     }
-    const [commentResponse, approvalResponse, checklistResponse] =
-      await Promise.all([
-        supabase
-          .from("task_comments")
-          .select("id, body, visibility, created_at")
-          .eq("task_id", nextTaskId)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("task_approvals")
-          .select("id, status, request_note, created_at")
-          .eq("task_id", nextTaskId)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("task_checklist_items")
-          .select("id,task_id,label,is_done,position")
-          .eq("task_id", nextTaskId)
-          .order("position", { ascending: true }),
-      ]);
-    if (commentResponse.error) throw commentResponse.error;
-    if (approvalResponse.error) throw approvalResponse.error;
-    if (checklistResponse.error) throw checklistResponse.error;
-    setComments((commentResponse.data ?? []) as Comment[]);
-    setApprovals((approvalResponse.data ?? []) as Approval[]);
-    setChecklist((checklistResponse.data ?? []) as ChecklistItem[]);
-  }, [companyId, isSuperAdmin, projectId, selectedTaskId]);
+  }, [companyId, isSuperAdmin, projectId, selectedMeetingId, selectedTaskId]);
 
   useEffect(() => {
     const timer = window.setTimeout(
@@ -296,6 +382,10 @@ export function TeamWorkspace({
   const selectedTask = useMemo(
     () => tasks.find((task) => task.id === selectedTaskId) ?? null,
     [tasks, selectedTaskId],
+  );
+  const selectedMeeting = useMemo(
+    () => meetings.find((meeting) => meeting.id === selectedMeetingId) ?? null,
+    [meetings, selectedMeetingId],
   );
   const selectedCompany = useMemo(
     () => companies.find((company) => company.id === companyId) ?? null,
@@ -535,6 +625,140 @@ export function TeamWorkspace({
       setMessage("Ringkasan cycle diperbarui.");
     });
   }
+  async function addMeeting(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!companyId || !projectId) return;
+    const form = new FormData(event.currentTarget);
+    await withAction(async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Sesi masuk berakhir.");
+      const meetingAt = String(form.get("meeting_at") ?? "");
+      const { data: meeting, error: meetingError } = await supabase
+        .from("project_meetings")
+        .insert({
+          company_id: companyId,
+          project_id: projectId,
+          cycle_id: cycles[0]?.id ?? null,
+          title: String(form.get("title") ?? "").trim(),
+          meeting_at: new Date(meetingAt).toISOString(),
+          agenda: String(form.get("agenda") ?? "").trim(),
+          client_visible: form.get("client_visible") === "on",
+          created_by: auth.user.id,
+          updated_by: auth.user.id,
+        })
+        .select("id")
+        .single();
+      if (meetingError) throw meetingError;
+      event.currentTarget.reset();
+      setSelectedMeetingId(meeting.id);
+      setMessage(
+        "Agenda meeting tersimpan. Tambahkan MoM dan tindak lanjut setelah diskusi.",
+      );
+    });
+  }
+  async function updateMeeting(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedMeeting || !companyId || !projectId) return;
+    const form = new FormData(event.currentTarget);
+    await withAction(async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Sesi masuk berakhir.");
+      const meetingAt = String(form.get("meeting_at") ?? "");
+      const { error: meetingError } = await supabase
+        .from("project_meetings")
+        .update({
+          title: String(form.get("title") ?? "").trim(),
+          meeting_at: new Date(meetingAt).toISOString(),
+          agenda: String(form.get("agenda") ?? "").trim(),
+          discussion_points: String(form.get("discussion_points") ?? "").trim(),
+          minutes_of_meeting: String(
+            form.get("minutes_of_meeting") ?? "",
+          ).trim(),
+          status: String(form.get("status")),
+          client_visible: form.get("client_visible") === "on",
+          updated_by: auth.user.id,
+        })
+        .eq("id", selectedMeeting.id);
+      if (meetingError) throw meetingError;
+      const file = form.get("attachment");
+      if (file instanceof File && file.size > 0) {
+        if (file.size > 25 * 1024 * 1024)
+          throw new Error("Ukuran file maksimal 25 MB.");
+        const extension = file.name.includes(".")
+          ? file.name.split(".").pop()
+          : "file";
+        const storagePath =
+          companyId +
+          "/meetings/" +
+          selectedMeeting.id +
+          "/" +
+          crypto.randomUUID() +
+          "." +
+          extension;
+        const { error: uploadError } = await supabase.storage
+          .from("client-documents")
+          .upload(storagePath, file, {
+            contentType: file.type || undefined,
+            upsert: false,
+          });
+        if (uploadError) throw uploadError;
+        const { error: fileError } = await supabase
+          .from("meeting_files")
+          .insert({
+            meeting_id: selectedMeeting.id,
+            company_id: companyId,
+            project_id: projectId,
+            uploaded_by: auth.user.id,
+            name: file.name,
+            storage_path: storagePath,
+            content_type: file.type || null,
+            byte_size: file.size,
+            client_visible: form.get("file_client_visible") === "on",
+          });
+        if (fileError) throw fileError;
+      }
+      if (meetingFileInput.current) meetingFileInput.current.value = "";
+      setMessage("Detail meeting, MoM, dan file telah diperbarui.");
+    });
+  }
+  async function addMeetingAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedMeeting || !companyId || !projectId) return;
+    const form = new FormData(event.currentTarget);
+    await withAction(async () => {
+      const { data: auth } = await getSupabaseBrowserClient().auth.getUser();
+      if (!auth.user) throw new Error("Sesi masuk berakhir.");
+      const { error: itemError } = await getSupabaseBrowserClient()
+        .from("meeting_action_items")
+        .insert({
+          meeting_id: selectedMeeting.id,
+          company_id: companyId,
+          project_id: projectId,
+          title: String(form.get("title") ?? "").trim(),
+          owner_label: String(form.get("owner_label") ?? "").trim() || null,
+          due_on: String(form.get("due_on") ?? "") || null,
+          client_visible: form.get("client_visible") === "on",
+          created_by: auth.user.id,
+        });
+      if (itemError) throw itemError;
+      event.currentTarget.reset();
+      setMessage("Tindak lanjut meeting ditambahkan.");
+    });
+  }
+  async function toggleMeetingAction(item: MeetingActionItem) {
+    await withAction(async () => {
+      const { error: itemError } = await getSupabaseBrowserClient()
+        .from("meeting_action_items")
+        .update({
+          is_done: !item.is_done,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", item.id);
+      if (itemError) throw itemError;
+    });
+  }
 
   return (
     <main className={styles.page}>
@@ -687,7 +911,7 @@ export function TeamWorkspace({
                   </select>
                 </label>
                 <label>
-                  Tenggat
+                  Tanggal agenda / tenggat
                   <input name="due_on" type="date" />
                 </label>
               </div>
@@ -737,7 +961,7 @@ export function TeamWorkspace({
                     />
                   </label>
                   <label>
-                    Tenggat
+                    Tanggal agenda / tenggat
                     <input
                       name="due_on"
                       type="date"
@@ -836,6 +1060,214 @@ export function TeamWorkspace({
               </label>
               <button disabled={busy}>Simpan ringkasan cycle</button>
             </form>
+          ) : null}
+          <section className={styles.actionGrid}>
+            <form className={styles.card} onSubmit={addMeeting}>
+              <p>AGENDA MEETING</p>
+              <h2>Jadwalkan diskusi</h2>
+              <label>
+                Judul meeting
+                <input
+                  name="title"
+                  required
+                  placeholder="Contoh: Weekly progress review"
+                />
+              </label>
+              <label>
+                Tanggal dan jam
+                <input name="meeting_at" type="datetime-local" required />
+              </label>
+              <label>
+                Agenda / materi yang dibahas
+                <textarea
+                  name="agenda"
+                  placeholder="Tujuan, pertanyaan, dan bahan diskusi…"
+                />
+              </label>
+              <label className={styles.check}>
+                <input name="client_visible" type="checkbox" defaultChecked />{" "}
+                Tampilkan jadwal kepada klien
+              </label>
+              <button disabled={busy}>Simpan agenda meeting</button>
+            </form>
+            <section className={styles.card}>
+              <p>DAFTAR MEETING</p>
+              <h2>Agenda proyek</h2>
+              <div className={styles.meetingList}>
+                {meetings.map((meeting) => (
+                  <button
+                    type="button"
+                    key={meeting.id}
+                    className={
+                      meeting.id === selectedMeetingId
+                        ? styles.selectedMeeting
+                        : ""
+                    }
+                    onClick={() => setSelectedMeetingId(meeting.id)}
+                  >
+                    <b>{meeting.title}</b>
+                    <small>
+                      {timestamp(meeting.meeting_at)} · {label(meeting.status)}
+                    </small>
+                  </button>
+                ))}
+                {!meetings.length ? (
+                  <p className={styles.empty}>
+                    Belum ada agenda meeting pada proyek ini.
+                  </p>
+                ) : null}
+              </div>
+            </section>
+          </section>
+          {selectedMeeting ? (
+            <section className={styles.actionGrid}>
+              <form
+                key={selectedMeeting.id}
+                className={styles.card}
+                onSubmit={updateMeeting}
+              >
+                <p>MOM &amp; MATERI MEETING</p>
+                <h2>{selectedMeeting.title}</h2>
+                <label>
+                  Judul meeting
+                  <input
+                    name="title"
+                    required
+                    defaultValue={selectedMeeting.title}
+                  />
+                </label>
+                <label>
+                  Tanggal dan jam
+                  <input
+                    name="meeting_at"
+                    type="datetime-local"
+                    required
+                    defaultValue={dateTimeInput(selectedMeeting.meeting_at)}
+                  />
+                </label>
+                <label>
+                  Agenda
+                  <textarea
+                    name="agenda"
+                    defaultValue={selectedMeeting.agenda}
+                  />
+                </label>
+                <label>
+                  Poin-poin diskusi
+                  <textarea
+                    name="discussion_points"
+                    defaultValue={selectedMeeting.discussion_points}
+                    placeholder="Tuliskan keputusan, insight, dan isu penting…"
+                  />
+                </label>
+                <label>
+                  Minutes of Meeting (MoM)
+                  <textarea
+                    name="minutes_of_meeting"
+                    defaultValue={selectedMeeting.minutes_of_meeting}
+                    placeholder="Ringkasan diskusi dan keputusan yang disepakati…"
+                  />
+                </label>
+                <label>
+                  Status meeting
+                  <select name="status" defaultValue={selectedMeeting.status}>
+                    <option value="planned">Terjadwal</option>
+                    <option value="completed">Selesai</option>
+                    <option value="cancelled">Dibatalkan</option>
+                  </select>
+                </label>
+                <label>
+                  Upload agenda / materi / MoM (opsional)
+                  <input
+                    ref={meetingFileInput}
+                    name="attachment"
+                    type="file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.xlsx,.jpg,.jpeg,.png,.webp"
+                  />
+                </label>
+                <label className={styles.check}>
+                  <input
+                    name="file_client_visible"
+                    type="checkbox"
+                    defaultChecked
+                  />{" "}
+                  Bagikan file kepada klien
+                </label>
+                <label className={styles.check}>
+                  <input
+                    name="client_visible"
+                    type="checkbox"
+                    defaultChecked={selectedMeeting.client_visible}
+                  />{" "}
+                  Tampilkan MoM kepada klien
+                </label>
+                <button disabled={busy}>Simpan MoM &amp; materi</button>
+              </form>
+              <section className={styles.card}>
+                <p>TO-DO MEETING</p>
+                <h2>Tindak lanjut yang disepakati</h2>
+                <form onSubmit={addMeetingAction}>
+                  <label>
+                    Tindak lanjut
+                    <input
+                      name="title"
+                      required
+                      placeholder="Contoh: Kirim akses Meta Ads"
+                    />
+                  </label>
+                  <label>
+                    PIC
+                    <input name="owner_label" placeholder="Nama PIC" />
+                  </label>
+                  <label>
+                    Tanggal agenda / tenggat
+                    <input name="due_on" type="date" />
+                  </label>
+                  <label className={styles.check}>
+                    <input
+                      name="client_visible"
+                      type="checkbox"
+                      defaultChecked
+                    />{" "}
+                    Tampilkan kepada klien
+                  </label>
+                  <button disabled={busy}>Tambah tindak lanjut</button>
+                </form>
+                <div className={styles.meetingList}>
+                  {meetingActions.map((item) => (
+                    <button
+                      type="button"
+                      key={item.id}
+                      onClick={() => void toggleMeetingAction(item)}
+                    >
+                      <b>
+                        {item.is_done ? "✓" : "○"} {item.title}
+                      </b>
+                      <small>
+                        {item.owner_label || "Diksilab"} · {date(item.due_on)}
+                      </small>
+                    </button>
+                  ))}
+                  {!meetingActions.length ? (
+                    <p className={styles.empty}>
+                      Belum ada tindak lanjut dari meeting ini.
+                    </p>
+                  ) : null}
+                </div>
+                <div className={styles.meetingFiles}>
+                  <b>Materi tersimpan</b>
+                  {meetingFiles.map((file) => (
+                    <span key={file.id}>
+                      ▤ {file.name}{" "}
+                      {file.client_visible ? "· terlihat klien" : "· internal"}
+                    </span>
+                  ))}
+                  {!meetingFiles.length ? (
+                    <span>Belum ada file yang dilampirkan.</span>
+                  ) : null}
+                </div>
+              </section>
+            </section>
           ) : null}
           <section className={styles.workspaceGrid}>
             <section className={styles.list}>

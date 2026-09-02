@@ -1,0 +1,141 @@
+.panel {
+  margin-top: 22px;
+  padding: 25px;
+  background: #151a3a;
+  border: 1px solid #ffffff17;
+  border-radius: 10px;
+  color: #eef0ff;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+.header p {
+  margin: 0 0 7px;
+  color: #b7ff21;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.header h2 {
+  margin: 0;
+  font-size: 23px;
+}
+.header > span {
+  color: #aeb5d9;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 15px;
+}
+.list {
+  display: grid;
+  gap: 1px;
+  background: #ffffff16;
+  align-content: start;
+}
+.list button {
+  border: 0;
+  background: #20254b;
+  color: #eef0ff;
+  padding: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.list button:hover,
+.list .selected {
+  background: #303662;
+  outline: 1px solid #b7ff21;
+}
+.list b,
+.list small {
+  display: block;
+}
+.list b {
+  font-size: 12px;
+}
+.list small {
+  margin-top: 5px;
+  color: #afb4d1;
+  font-size: 10px;
+}
+.detail {
+  display: grid;
+  gap: 10px;
+}
+.detail > div {
+  padding: 13px;
+  background: #20254b;
+}
+.detail small {
+  display: block;
+  color: #b7ff21;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+.detail p {
+  margin: 7px 0 0;
+  color: #c9cde2;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+.actions p {
+  display: grid;
+  gap: 3px;
+}
+.actions span {
+  margin-left: 17px;
+  color: #aab0cf;
+  font-size: 10px;
+}
+.files {
+  display: grid;
+  gap: 7px;
+}
+.files button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #eef0ff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+}
+.files button:hover {
+  color: #b7ff21;
+}
+.notice,
+.error {
+  margin: 14px 0 0;
+  padding: 10px;
+  font-size: 11px;
+}
+.notice {
+  background: #253d2d;
+  color: #dcffbd;
+}
+.error {
+  background: #4e2428;
+  color: #ffd4d6;
+}
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .header {
+    display: block;
+  }
+  .header > span {
+    display: block;
+    margin-top: 9px;
+  }
+}

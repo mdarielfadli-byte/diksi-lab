@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { ClientProjectActions } from "./ClientProjectActions";
+import { ClientMeetingNotes } from "./ClientMeetingNotes";
 import { KickoffLaunchpad } from "./KickoffLaunchpad";
 import styles from "./public-member.module.css";
 import brand from "./brand-guideline.module.css";
@@ -488,6 +489,9 @@ export function PublicMemberDashboard({
           <a href="#updates">
             ◌ <span>Update &amp; approval</span>
           </a>
+          <a href="#meetings">
+            ◌ <span>Meeting &amp; MoM</span>
+          </a>
           <a href="#documents">
             ▤ <span>Dokumen</span>
           </a>
@@ -899,6 +903,7 @@ export function PublicMemberDashboard({
           </div>
         </section>
         <ClientProjectActions companyId={companyId} projectId={projectId} />
+        <ClientMeetingNotes projectId={projectId} />
         <footer>
           DIKSILAB CLIENT DASHBOARD <span>•</span> DATA PROYEK BERSIFAT RAHASIA
         </footer>
