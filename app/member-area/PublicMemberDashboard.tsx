@@ -250,6 +250,7 @@ export function PublicMemberDashboard({
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [updatedBy, setUpdatedBy] = useState("DiksiLab");
   const [error, setError] = useState("");
+  const [calendarOffset, setCalendarOffset] = useState(0);
   const loadDashboard = useCallback(async () => {
     try {
       if (!projectId) throw new Error("Proyek klien belum tersedia.");
@@ -467,7 +468,12 @@ export function PublicMemberDashboard({
       0,
     [data],
   );
-  const currentCalendarMonth = new Date();
+  const today = new Date();
+  const currentCalendarMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + calendarOffset,
+    1,
+  );
   const nextCalendarMonth = new Date(
     currentCalendarMonth.getFullYear(),
     currentCalendarMonth.getMonth() + 1,
@@ -592,7 +598,20 @@ export function PublicMemberDashboard({
               <p>KALENDER BULANAN</p>
               <h2>Jadwal saat ini dan bulan berikutnya</h2>
             </div>
-            <span>Task dan meeting yang dibagikan tim</span>
+            <div className={styles.calendarControls}>
+              <button
+                type="button"
+                onClick={() => setCalendarOffset((value) => value - 1)}
+              >
+                ← Bulan sebelumnya
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalendarOffset((value) => value + 1)}
+              >
+                Bulan berikutnya →
+              </button>
+            </div>
           </div>
           <div className={styles.monthCalendar}>
             <MonthlyCalendar
