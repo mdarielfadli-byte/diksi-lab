@@ -304,3 +304,69 @@
 .meetingFiles span {
   color: #595b55;
 }
+.calendarModalBackdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #12130c9c;
+}
+.calendarModal {
+  width: min(100%, 510px);
+  display: grid;
+  gap: 13px;
+  padding: 24px;
+  background: #fff;
+  color: #151612;
+  box-shadow: 0 30px 90px #0008;
+}
+.calendarModal label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.calendarModal input,
+.calendarModal select,
+.calendarModal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #a8aa9e;
+  padding: 11px;
+  background: #fff;
+  font: inherit;
+}
+.calendarModal textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: start;
+}
+.modalHeader p {
+  margin: 0;
+  color: #6f31dc;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.modalHeader h2 {
+  margin: 7px 0 0;
+  font-size: 25px;
+  letter-spacing: -0.055em;
+}
+.modalHeader button {
+  border: 0;
+  background: #151612;
+  color: #e1ff38;
+  width: 34px;
+  height: 34px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}

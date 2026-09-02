@@ -10,6 +10,7 @@ import {
 } from "react";
 import Link from "next/link";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
+import { CalendarEntry, TeamProjectCalendar } from "./TeamProjectCalendar";
 import styles from "./team-workspace.module.css";
 
 type Company = { id: string; name: string; slug: string };
@@ -164,6 +165,7 @@ export function TeamWorkspace({
   const [selectedMeetingId, setSelectedMeetingId] = useState("");
   const [meetingActions, setMeetingActions] = useState<MeetingActionItem[]>([]);
   const [meetingFiles, setMeetingFiles] = useState<MeetingFile[]>([]);
+  const [calendarDate, setCalendarDate] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -386,6 +388,27 @@ export function TeamWorkspace({
   const selectedMeeting = useMemo(
     () => meetings.find((meeting) => meeting.id === selectedMeetingId) ?? null,
     [meetings, selectedMeetingId],
+  );
+  const calendarEntries = useMemo<CalendarEntry[]>(
+    () => [
+      ...tasks
+        .filter((task) => task.due_on)
+        .map((task) => ({
+          id: task.id,
+          title: task.title,
+          date: task.due_on as string,
+          kind: "task" as const,
+          status: task.status,
+        })),
+      ...meetings.map((meeting) => ({
+        id: meeting.id,
+        title: meeting.title,
+        date: meeting.meeting_at.slice(0, 10),
+        kind: "meeting" as const,
+        status: meeting.status,
+      })),
+    ],
+    [meetings, tasks],
   );
   const selectedCompany = useMemo(
     () => companies.find((company) => company.id === companyId) ?? null,
@@ -759,6 +782,60 @@ export function TeamWorkspace({
       if (itemError) throw itemError;
     });
   }
+  async function addCalendarEntry(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!calendarDate || !companyId || !projectId) return;
+    const form = new FormData(event.currentTarget);
+    await withAction(async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Sesi masuk berakhir.");
+      const kind = String(form.get("kind"));
+      const title = String(form.get("title") ?? "").trim();
+      const clientVisible = form.get("client_visible") === "on";
+      if (kind === "meeting") {
+        const meetingTime = String(form.get("meeting_time") || "09:00");
+        const { error: meetingError } = await supabase
+          .from("project_meetings")
+          .insert({
+            company_id: companyId,
+            project_id: projectId,
+            cycle_id: cycles[0]?.id ?? null,
+            title,
+            meeting_at: new Date(
+              calendarDate + "T" + meetingTime,
+            ).toISOString(),
+            agenda: String(form.get("agenda") ?? "").trim(),
+            client_visible: clientVisible,
+            created_by: auth.user.id,
+            updated_by: auth.user.id,
+          });
+        if (meetingError) throw meetingError;
+        setMessage("Meeting ditambahkan ke kalender proyek.");
+      } else {
+        const { error: taskError } = await supabase
+          .from("project_tasks")
+          .insert({
+            company_id: companyId,
+            project_id: projectId,
+            title,
+            description:
+              String(form.get("agenda") ?? "").trim() || "Agenda proyek",
+            owner_label: String(form.get("owner_label") ?? "").trim() || null,
+            workstream: "general",
+            status: "planned",
+            priority: "normal",
+            due_on: calendarDate,
+            client_visible: clientVisible,
+            created_by: auth.user.id,
+          });
+        if (taskError) throw taskError;
+        setMessage("Action ditambahkan ke kalender dan board task.");
+      }
+      event.currentTarget.reset();
+      setCalendarDate(null);
+    });
+  }
 
   return (
     <main className={styles.page}>
@@ -855,6 +932,87 @@ export function TeamWorkspace({
               <span>Approved / completed</span>
             </article>
           </section>
+          <TeamProjectCalendar
+            entries={calendarEntries}
+            onSelectDate={(date) => setCalendarDate(date)}
+          />
+          {calendarDate ? (
+            <div
+              className={styles.calendarModalBackdrop}
+              role="presentation"
+              onMouseDown={() => setCalendarDate(null)}
+            >
+              <form
+                className={styles.calendarModal}
+                onSubmit={addCalendarEntry}
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className={styles.modalHeader}>
+                  <div>
+                    <p>TAMBAH KE KALENDER</p>
+                    <h2>
+                      {new Intl.DateTimeFormat("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }).format(new Date(calendarDate + "T00:00:00"))}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Tutup pop-up kalender"
+                    onClick={() => setCalendarDate(null)}
+                  >
+                    ×
+                  </button>
+                </div>
+                <label>
+                  Jenis agenda
+                  <select name="kind" defaultValue="task">
+                    <option value="task">Action / task</option>
+                    <option value="meeting">Meeting</option>
+                  </select>
+                </label>
+                <label>
+                  Judul
+                  <input
+                    name="title"
+                    required
+                    placeholder="Contoh: Review wireframe website"
+                  />
+                </label>
+                <label>
+                  Jam meeting (bila memilih meeting)
+                  <input name="meeting_time" type="time" defaultValue="09:00" />
+                </label>
+                <label>
+                  Agenda / catatan awal
+                  <textarea
+                    name="agenda"
+                    placeholder="Tujuan, konteks, atau bahan diskusi…"
+                  />
+                </label>
+                <label>
+                  PIC action (opsional)
+                  <input name="owner_label" placeholder="Contoh: Ibel Zamif" />
+                </label>
+                <label className={styles.check}>
+                  <input name="client_visible" type="checkbox" defaultChecked />{" "}
+                  Tampilkan kepada klien
+                </label>
+                <div className={styles.inline}>
+                  <button disabled={busy}>Simpan ke kalender</button>
+                  <button
+                    type="button"
+                    className={styles.secondary}
+                    onClick={() => setCalendarDate(null)}
+                  >
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          ) : null}
           <section className={styles.actionGrid}>
             <form className={styles.card} onSubmit={addTask}>
               <p>TAMBAH TASK</p>
