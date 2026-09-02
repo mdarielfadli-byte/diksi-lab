@@ -1079,9 +1079,30 @@ export function TeamWorkspace({
               </label>
               <button disabled={busy}>Simpan task</button>
             </form>
-            <form className={styles.card} onSubmit={updateTask}>
+            <form
+              key={selectedTask?.id ?? "no-task"}
+              className={styles.card}
+              onSubmit={updateTask}
+            >
               <p>UPDATE TASK &amp; OUTPUT</p>
               <h2>{selectedTask?.title ?? "Pilih task"}</h2>
+              <label>
+                Task yang ingin diedit
+                <select
+                  value={selectedTaskId}
+                  onChange={(event) => setSelectedTaskId(event.target.value)}
+                  disabled={!tasks.length}
+                >
+                  {!tasks.length ? (
+                    <option value="">Belum ada task</option>
+                  ) : null}
+                  {tasks.map((task) => (
+                    <option key={task.id} value={task.id}>
+                      {task.title} · {date(task.due_on)}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {selectedTask ? (
                 <>
                   <label>
