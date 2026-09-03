@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { CalendarEntry, TeamProjectCalendar } from "./TeamProjectCalendar";
+import { TeamCollaboration } from "./TeamCollaboration";
 import styles from "./team-workspace.module.css";
 
 type Company = { id: string; name: string; slug: string };
@@ -1501,6 +1502,7 @@ export function TeamWorkspace({
               </section>
             </section>
           ) : null}
+          <TeamCollaboration companyId={companyId} projectId={projectId} />
           <section className={styles.workspaceGrid}>
             <section className={styles.list}>
               <div>

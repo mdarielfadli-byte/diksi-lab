@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { ClientProjectActions } from "./ClientProjectActions";
 import { ClientMeetingNotes } from "./ClientMeetingNotes";
+import { ClientCollaboration } from "./ClientCollaboration";
 import { KickoffLaunchpad } from "./KickoffLaunchpad";
 import styles from "./public-member.module.css";
 import brand from "./brand-guideline.module.css";
@@ -935,6 +936,7 @@ export function PublicMemberDashboard({
         </section>
         <ClientProjectActions companyId={companyId} projectId={projectId} />
         <ClientMeetingNotes projectId={projectId} />
+        <ClientCollaboration companyId={companyId} projectId={projectId} />
         <footer>
           DIKSILAB CLIENT DASHBOARD <span>•</span> DATA PROYEK BERSIFAT RAHASIA
         </footer>
