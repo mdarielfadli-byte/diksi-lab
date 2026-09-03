@@ -146,6 +146,10 @@
   background: #e1ff38 !important;
   color: #151612 !important;
 }
+.danger {
+  background: #a8271a !important;
+  color: #fff !important;
+}
 .kpi {
   grid-template-columns: repeat(4, 1fr);
   margin-top: 24px;
@@ -237,7 +241,16 @@
   padding: 14px;
 }
 .notice {
+  position: fixed;
+  z-index: 40;
+  right: 24px;
+  bottom: 24px;
+  max-width: min(420px, calc(100vw - 48px));
+  margin: 0;
   background: #dff5ae;
+  border: 1px solid #151612;
+  box-shadow: 0 14px 35px #0003;
+  font-weight: 700;
 }
 .error {
   background: #ffddd8;

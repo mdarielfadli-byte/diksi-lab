@@ -469,9 +469,52 @@ export function TeamWorkspace({
         });
       if (insertError) throw insertError;
       event.currentTarget.reset();
-      setMessage("Task disimpan; progres dan audit log diperbarui otomatis.");
+      setMessage(
+        "Berhasil: task proyek dibuat. Progres dan audit log diperbarui otomatis.",
+      );
     });
   }
+
+  async function deleteTask() {
+    if (!selectedTask || !isSuperAdmin) return;
+    const confirmed = window.confirm(
+      `Hapus task “${selectedTask.title}”? Checklist, komentar, approval, dan metadata file terkait juga akan terhapus.`,
+    );
+    if (!confirmed) return;
+
+    await withAction(async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data: files, error: filesError } = await supabase
+        .from("task_files")
+        .select("storage_path")
+        .eq("task_id", selectedTask.id);
+      if (filesError) throw filesError;
+
+      const { error: deleteError } = await supabase
+        .from("project_tasks")
+        .delete()
+        .eq("id", selectedTask.id);
+      if (deleteError) throw deleteError;
+
+      setSelectedTaskId("");
+      const paths = (files ?? []).map(
+        (file: { storage_path: string }) => file.storage_path,
+      );
+      if (paths.length) {
+        const { error: storageError } = await supabase.storage
+          .from("client-documents")
+          .remove(paths);
+        setMessage(
+          storageError
+            ? "Task proyek berhasil dihapus. Beberapa file fisik perlu dibersihkan dari storage."
+            : "Task proyek berhasil dihapus.",
+        );
+        return;
+      }
+      setMessage("Task proyek berhasil dihapus.");
+    });
+  }
+
   async function updateTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedTask) return;
@@ -1198,6 +1241,16 @@ export function TeamWorkspace({
                     >
                       Minta approval
                     </button>
+                    {isSuperAdmin ? (
+                      <button
+                        type="button"
+                        className={styles.danger}
+                        onClick={() => void deleteTask()}
+                        disabled={busy}
+                      >
+                        Hapus task
+                      </button>
+                    ) : null}
                   </div>
                 </>
               ) : (
@@ -1599,7 +1652,11 @@ export function TeamWorkspace({
       ) : (
         <p className={styles.empty}>Pilih proyek untuk membuka workspace.</p>
       )}
-      {message ? <p className={styles.notice}>{message}</p> : null}
+      {message ? (
+        <p className={styles.notice} role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : null}
       {error ? <p className={styles.error}>{error}</p> : null}
     </main>
   );
