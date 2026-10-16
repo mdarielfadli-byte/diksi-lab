@@ -2,14 +2,21 @@
 
 import { ChangeEvent, useMemo, useRef, useState } from "react";
 import styles from "./PortalTools.module.css";
+import polish from "./portal-tools-polish.module.css";
 
-export type WorkItem = { id: string; project_id: string; cycle_id: string | null; channel: string; title: string; status: string; scheduled_for: string | null; owner_name: string | null; created_at: string };
+export type WorkItem = {
+  id: string; project_id: string; cycle_id: string | null; channel: string;
+  title: string; status: string; scheduled_for: string | null; owner_name: string | null; created_at: string;
+};
 export type AdSpend = { id: string; channel: string; budget: number | string; amount_spent: number | string; currency: string; recorded_on: string };
 export type DocumentItem = { id: string; name: string; storage_path: string; content_type: string | null; byte_size: number | null; created_at: string };
 type PlannerTab = "content" | "seo" | "ads";
 
-function currency(value: number, code: string) { return new Intl.NumberFormat("id-ID", { style: "currency", currency: code || "IDR", maximumFractionDigits: 0 }).format(value); }
-function toNumber(value: number | string) { return typeof value === "number" ? value : Number(value); }
+function currency(value: number, code: string) {
+  try { return new Intl.NumberFormat("id-ID", { style: "currency", currency: code || "IDR", maximumFractionDigits: 0 }).format(value); }
+  catch { return `${code || "IDR"} ${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(value)}`; }
+}
+function toNumber(value: number | string) { const number = typeof value === "number" ? value : Number(value); return Number.isFinite(number) ? number : 0; }
 function readableDate(value: string | null) { return value ? new Intl.DateTimeFormat("id-ID", { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${value}T00:00:00`)) : "Tanpa tanggal"; }
 function tabFor(channel: string): PlannerTab { const normalized = channel.toLowerCase(); if (/seo|article|artikel/.test(normalized)) return "seo"; if (/ads|meta|google|campaign/.test(normalized)) return "ads"; return "content"; }
 
@@ -21,7 +28,69 @@ export function PortalTools({ workItems, spend, documents, onUpload, canUpload =
   const filteredItems = useMemo(() => workItems.filter((item) => tabFor(item.channel) === tab), [tab, workItems]);
   const spendTotals = useMemo(() => spend.reduce((total, item) => ({ budget: total.budget + toNumber(item.budget), spent: total.spent + toNumber(item.amount_spent) }), { budget: 0, spent: 0 }), [spend]);
   const currencyCode = spend[0]?.currency ?? "IDR";
-  const percentage = spendTotals.budget ? Math.min(100, (spendTotals.spent / spendTotals.budget) * 100) : 0;
-  async function addFiles(event: ChangeEvent<HTMLInputElement>) { const selected = Array.from(event.target.files ?? []); event.target.value = ""; if (!selected.length) return; setUploading(true); setUploadMessage(""); try { for (const file of selected) await onUpload(file); setUploadMessage(`${selected.length} file berhasil diunggah ke ruang proyek.`); } catch (caught) { setUploadMessage(caught instanceof Error ? caught.message : "File belum dapat diunggah."); } finally { setUploading(false); } }
-  return <><section className={styles.cycle} aria-labelledby="cycle-title"><div className={styles.sectionHead}><div><p className={styles.eyebrow}>RINGKASAN CYCLE</p><h2 id="cycle-title">Apa yang sudah bergerak</h2></div></div><div className={styles.cycleGrid}><article><span className={styles.cycleNumber}>{workItems.length}</span><div><b>Output terdaftar</b><p>Semua pekerjaan pada kalender channel tersinkron dari database.</p></div></article><article><span className={styles.cycleNumber}>{documents.length}</span><div><b>Dokumen tersimpan</b><p>File berada pada Storage privat perusahaan.</p></div></article><article><span className={styles.cycleNumber}>{spend.length}</span><div><b>Catatan pengeluaran</b><p>Rekap biaya iklan yang telah dicatat oleh tim.</p></div></article></div></section><section className={styles.planner} aria-labelledby="planner-title"><div className={styles.plannerIntro}><div><p className={styles.eyebrow}>RENCANA KERJA</p><h2 id="planner-title">Satu kalender untuk setiap channel.</h2></div><p>Pilih area kerja untuk melihat jadwal dan status yang benar-benar tersimpan pada cycle proyek Anda.</p></div><div className={styles.tabList} role="tablist" aria-label="Jenis kalender"><button className={tab === "content" ? styles.tabActive : ""} onClick={() => setTab("content")} role="tab" aria-selected={tab === "content"}>Instagram &amp; LinkedIn</button><button className={tab === "seo" ? styles.tabActive : ""} onClick={() => setTab("seo")} role="tab" aria-selected={tab === "seo"}>Article SEO</button><button className={tab === "ads" ? styles.tabActive : ""} onClick={() => setTab("ads")} role="tab" aria-selected={tab === "ads"}>Ads</button></div><div className={styles.calendarPanel}><div className={styles.calendarHeader}><div><h3>{tab === "seo" ? "Calendar Article SEO" : tab === "ads" ? "Calendar Ads" : "Calendar Content — Instagram & LinkedIn"}</h3><p>Jadwal dan status diperbarui oleh tim Diksilab.</p></div></div><div className={styles.calendarGrid}>{filteredItems.map((item) => <article key={item.id}><header><span>{item.channel}</span><b>{readableDate(item.scheduled_for)}</b></header><div className={styles.calendarItem}><small>{item.owner_name ?? "DIKSILAB"}</small><b>{item.title}</b><span>{item.status}</span></div></article>)}{filteredItems.length === 0 ? <p className={styles.empty}>Belum ada item yang dipublikasikan untuk channel ini.</p> : null}</div></div></section><section className={styles.commerce} aria-label="Biaya dan dokumen"><article className={styles.spendCard}><p className={styles.eyebrow}>ADS — DATA TEREKAM</p><h2>Amount spent</h2><div className={styles.spendAmount}>{currency(spendTotals.spent, currencyCode)}</div><div className={styles.spendMeta}><span><b>{currency(spendTotals.budget, currencyCode)}</b><small>Budget tercatat</small></span><span><b>{percentage.toFixed(1)}%</b><small>Terserap</small></span><span><b>{currency(Math.max(0, spendTotals.budget - spendTotals.spent), currencyCode)}</b><small>Sisa budget</small></span></div><div className={styles.spendTrack}><b style={{ width: `${percentage}%` }} /></div><p className={styles.spendNote}>{spend.length ? "Nilai dihitung dari catatan pengeluaran yang tersedia." : "Belum ada catatan pengeluaran iklan pada proyek ini."}</p></article><article className={styles.uploadCard} id="dokumen"><p className={styles.eyebrow}>{canUpload ? "DOKUMEN INTERNAL" : "DOKUMEN PROYEK"}</p><h2>{canUpload ? "Upload aset proyek" : "Dokumen tersimpan"}</h2><p className={styles.uploadIntro}>{canUpload ? "Materi kerja tim tersimpan privat di ruang perusahaan." : "Dokumen dibagikan oleh tim Diksilab dan hanya dapat dilihat oleh anggota perusahaan Anda."}</p>{canUpload ? <><input className={styles.fileInput} ref={uploadInput} type="file" multiple onChange={addFiles} accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.xlsx" /><button className={styles.uploadDrop} onClick={() => uploadInput.current?.click()} disabled={uploading}><span>↑</span><b>{uploading ? "Mengunggah file…" : "Pilih file untuk diunggah"}</b><small>PDF, DOCX, XLSX, JPG, PNG · maks. 25 MB</small></button>{uploadMessage ? <p className={styles.uploadMessage}>{uploadMessage}</p> : null}</> : null}{documents.length ? <div className={styles.selectedFiles}>{documents.slice(0, 5).map((document) => <span key={document.id}>✓ {document.name}</span>)}</div> : <p className={styles.empty}>Belum ada dokumen yang dibagikan.</p>}</article></section></>;
+  const percentage = spendTotals.budget > 0 ? Math.min(100, (spendTotals.spent / spendTotals.budget) * 100) : 0;
+
+  async function addFiles(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const selected = Array.from(input.files ?? []);
+    input.value = "";
+    if (!selected.length) return;
+    const oversized = selected.find((file) => file.size > 25 * 1024 * 1024);
+    if (oversized) { setUploadMessage(`“${oversized.name}” melebihi batas 25 MB.`); return; }
+    setUploading(true);
+    setUploadMessage("");
+    let uploaded = 0;
+    try {
+      for (const file of selected) { await onUpload(file); uploaded += 1; }
+      setUploadMessage(`${uploaded} file berhasil diunggah ke ruang proyek.`);
+    } catch (caught) {
+      const reason = caught instanceof Error ? caught.message : "Terjadi kesalahan.";
+      setUploadMessage(uploaded ? `${uploaded} dari ${selected.length} file berhasil. Upload berikutnya gagal: ${reason}` : `File belum dapat diunggah: ${reason}`);
+    } finally { setUploading(false); }
+  }
+
+  return (
+    <>
+      <section className={styles.cycle} aria-labelledby="cycle-title">
+        <div className={styles.sectionHead}><div><p className={styles.eyebrow}>RINGKASAN CYCLE</p><h2 id="cycle-title">Apa yang sudah bergerak</h2></div></div>
+        <div className={styles.cycleGrid}>
+          <article><span className={styles.cycleNumber}>{workItems.length}</span><div><b>Output terdaftar</b><p>Semua pekerjaan pada kalender channel tersinkron dari database.</p></div></article>
+          <article><span className={styles.cycleNumber}>{documents.length}</span><div><b>Dokumen tersimpan</b><p>File berada pada Storage privat perusahaan.</p></div></article>
+          <article><span className={styles.cycleNumber}>{spend.length}</span><div><b>Catatan pengeluaran</b><p>Rekap biaya iklan yang telah dicatat oleh tim.</p></div></article>
+        </div>
+      </section>
+
+      <section className={styles.planner} aria-labelledby="planner-title">
+        <div className={styles.plannerIntro}><div><p className={styles.eyebrow}>RENCANA KERJA</p><h2 id="planner-title">Satu kalender untuk setiap channel.</h2></div><p>Pilih area kerja untuk melihat jadwal dan status yang benar-benar tersimpan pada cycle proyek Anda.</p></div>
+        <div className={styles.tabList} role="tablist" aria-label="Jenis kalender">
+          <button type="button" className={`${tab === "content" ? styles.tabActive : ""} ${polish.tabButton}`} onClick={() => setTab("content")} role="tab" aria-selected={tab === "content"}>Instagram &amp; LinkedIn</button>
+          <button type="button" className={`${tab === "seo" ? styles.tabActive : ""} ${polish.tabButton}`} onClick={() => setTab("seo")} role="tab" aria-selected={tab === "seo"}>Article SEO</button>
+          <button type="button" className={`${tab === "ads" ? styles.tabActive : ""} ${polish.tabButton}`} onClick={() => setTab("ads")} role="tab" aria-selected={tab === "ads"}>Ads</button>
+        </div>
+        <div className={styles.calendarPanel}>
+          <div className={styles.calendarHeader}><div><h3>{tab === "seo" ? "Calendar Article SEO" : tab === "ads" ? "Calendar Ads" : "Calendar Content — Instagram & LinkedIn"}</h3><p>Jadwal dan status diperbarui oleh tim Diksilab.</p></div></div>
+          <div className={styles.calendarGrid}>
+            {filteredItems.map((item) => <article key={item.id}><header><span>{item.channel}</span><b>{readableDate(item.scheduled_for)}</b></header><div className={styles.calendarItem}><small>{item.owner_name ?? "DIKSILAB"}</small><b>{item.title}</b><span>{item.status.replaceAll("_", " ")}</span></div></article>)}
+            {filteredItems.length === 0 ? <p className={styles.empty}>Belum ada item yang dipublikasikan untuk channel ini.</p> : null}
+          </div>
+        </div>
+      </section>
+
+      <section className={styles.commerce} aria-label="Biaya dan dokumen">
+        <article className={styles.spendCard}>
+          <p className={styles.eyebrow}>ADS — DATA TEREKAM</p><h2>Amount spent</h2>
+          <div className={styles.spendAmount}>{currency(spendTotals.spent, currencyCode)}</div>
+          <div className={styles.spendMeta}><span><b>{currency(spendTotals.budget, currencyCode)}</b><small>Budget tercatat</small></span><span><b>{percentage.toFixed(1)}%</b><small>Terserap</small></span><span><b>{currency(Math.max(0, spendTotals.budget - spendTotals.spent), currencyCode)}</b><small>Sisa budget</small></span></div>
+          <div className={styles.spendTrack} role="progressbar" aria-label="Persentase budget ads terpakai" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage}><b style={{ width: `${percentage}%` }} /></div>
+          <p className={styles.spendNote}>{spend.length ? "Nilai dihitung dari catatan pengeluaran yang tersedia." : "Belum ada catatan pengeluaran iklan pada proyek ini."}</p>
+        </article>
+        <article className={styles.uploadCard} id="dokumen">
+          <p className={styles.eyebrow}>{canUpload ? "DOKUMEN INTERNAL" : "DOKUMEN PROYEK"}</p><h2>{canUpload ? "Upload aset proyek" : "Dokumen tersimpan"}</h2>
+          <p className={styles.uploadIntro}>{canUpload ? "Materi kerja tim tersimpan privat di ruang perusahaan." : "Dokumen dibagikan oleh tim Diksilab dan hanya dapat dilihat oleh anggota perusahaan Anda."}</p>
+          {canUpload ? <><input className={styles.fileInput} ref={uploadInput} type="file" multiple onChange={addFiles} accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp,.xlsx" aria-label="Pilih file untuk diunggah" /><button type="button" className={`${styles.uploadDrop} ${polish.uploadDrop}`} onClick={() => uploadInput.current?.click()} disabled={uploading}><span aria-hidden="true">↑</span><b>{uploading ? "Mengunggah file…" : "Pilih file untuk diunggah"}</b><small>PDF, DOCX, PPTX, XLSX, JPG, PNG · maks. 25 MB/file</small></button>{uploadMessage ? <p className={polish.uploadMessage} role="status">{uploadMessage}</p> : null}</> : null}
+          {documents.length ? <div className={styles.selectedFiles}>{documents.slice(0, 5).map((document) => <span key={document.id}>✓ {document.name}</span>)}</div> : <p className={styles.empty}>Belum ada dokumen yang dibagikan.</p>}
+        </article>
+      </section>
+    </>
+  );
 }

@@ -92,8 +92,9 @@
   font-weight: 800;
 }
 .controls select,
-.card input,
+.card input:not([type="checkbox"]):not([type="file"]),
 .card select,
+.card textarea,
 .context select,
 .context textarea {
   width: 100%;
@@ -102,6 +103,38 @@
   background: #fff;
   padding: 11px;
   font: inherit;
+}
+.card textarea,
+.context textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+.card input:focus-visible,
+.card select:focus-visible,
+.card textarea:focus-visible,
+.controls select:focus-visible,
+.context select:focus-visible,
+.context textarea:focus-visible,
+.calendarModal input:focus-visible,
+.calendarModal select:focus-visible,
+.calendarModal textarea:focus-visible {
+  outline: 3px solid #a67aff;
+  outline-offset: 2px;
+}
+.card input[type="file"] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px dashed #a8aa9e;
+  background: #f5f6f0;
+  padding: 10px;
+  font: inherit;
+  font-size: 11px;
+}
+.card input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #6f31dc;
 }
 .actionGrid {
   display: grid;
@@ -127,6 +160,18 @@
 .card button {
   justify-self: start;
   margin-top: 8px;
+}
+.page button:disabled,
+.calendarModal button:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+.page button:focus-visible,
+.calendarModal button:focus-visible,
+.list button:focus-visible,
+.meetingList button:focus-visible {
+  outline: 3px solid #a67aff;
+  outline-offset: 2px;
 }
 .check {
   display: flex !important;

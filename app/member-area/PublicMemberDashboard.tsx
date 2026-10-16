@@ -6,6 +6,7 @@ import { getSupabaseBrowserClient } from "../../lib/supabase/browser";
 import { ClientProjectActions } from "./ClientProjectActions";
 import { ClientMeetingNotes } from "./ClientMeetingNotes";
 import { ClientCollaboration } from "./ClientCollaboration";
+import { ClientDocumentLibrary } from "./ClientDocumentLibrary";
 import { KickoffLaunchpad } from "./KickoffLaunchpad";
 import styles from "./public-member.module.css";
 import brand from "./brand-guideline.module.css";
@@ -118,6 +119,24 @@ type DashboardData = {
   client_actions: ClientAction[];
 };
 
+type DashboardPage = "overview" | "project" | "calendar" | "documents" | "launchpad" | "collaboration";
+const dashboardNavigation: Array<{ id: DashboardPage; label: string; icon: string }> = [
+  { id: "overview", label: "Ringkasan", icon: "◈" },
+  { id: "project", label: "Proyek & progress", icon: "◷" },
+  { id: "calendar", label: "Kalender", icon: "▦" },
+  { id: "documents", label: "Dokumen & file", icon: "▤" },
+  { id: "launchpad", label: "Launchpad", icon: "✳" },
+  { id: "collaboration", label: "Kolaborasi", icon: "◌" },
+];
+const pageTitle: Record<DashboardPage, string> = {
+  overview: "Ringkasan proyek",
+  project: "Proyek & progress",
+  calendar: "Kalender proyek",
+  documents: "Dokumen & file",
+  launchpad: "Project Launchpad",
+  collaboration: "Kolaborasi & approval",
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
@@ -170,7 +189,12 @@ function ActivityTable({
                 <small>
                   {item.area.split(/(https:\/\/[^\s]+)/g).map((part, index) =>
                     part.startsWith("https://") ? (
-                      <a key={`${part}-${index}`} href={part} target="_blank" rel="noreferrer noopener">
+                      <a
+                        key={`${part}-${index}`}
+                        href={part}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
                         Buka materi ↗
                       </a>
                     ) : (
@@ -178,6 +202,9 @@ function ActivityTable({
                     ),
                   )}
                 </small>
+                {!completed && item.scheduled_for && new Date(`${item.scheduled_for}T00:00:00`).getTime() < new Date().setHours(0, 0, 0, 0) ? (
+                  <small className={styles.overdue}>Tenggat awal terlewat · perlu dijadwalkan ulang</small>
+                ) : null}
               </td>
               <td>{item.owner}</td>
               <td>
@@ -250,12 +277,14 @@ export function PublicMemberDashboard({
   projectId,
   onSignOut,
   onBackToWorkspace,
+  page = "overview",
 }: {
   companySlug: string;
   companyId: string;
   projectId: string | null;
   onSignOut: () => void;
   onBackToWorkspace?: () => void;
+  page?: DashboardPage;
 }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -513,44 +542,21 @@ export function PublicMemberDashboard({
             <small>Client workspace</small>
           </div>
         </div>
-        <nav className={styles.nav} aria-label="Navigasi dashboard">
-          <a className={styles.active} href="#overview">
-            ◈ <span>Dashboard</span>
-          </a>
-          <a href="#launchpad">
-            ✳ <span>Cycle 0 Launchpad</span>
-          </a>
-          <a href="#calendar">
-            ▥ <span>Kalender</span>
-          </a>
-          <a href="#roadmap">
-            ↗ <span>Roadmap</span>
-          </a>
-          <a href="#brand">
-            ✳ <span>Brand guideline</span>
-          </a>
-          <a href="#delivery">
-            ◫ <span>Workstreams</span>
-          </a>
-          <a href="#planned">
-            ◷ <span>Akan dilakukan</span>
-          </a>
-          <a href="#completed">
-            ✓ <span>Telah dilakukan</span>
-          </a>
-          <a href="#updates">
-            ◌ <span>Update &amp; approval</span>
-          </a>
-          <a href="#meetings">
-            ◌ <span>Meeting &amp; MoM</span>
-          </a>
-          <a href="#documents">
-            ▤ <span>Dokumen</span>
-          </a>
+        <nav className={styles.nav} aria-label="Navigasi ruang klien">
+          {dashboardNavigation.map((item) => (
+            <Link
+              key={item.id}
+              className={page === item.id ? styles.active : ""}
+              href={item.id === "overview" ? "/member-area" : `/member-area/${item.id}`}
+              aria-current={page === item.id ? "page" : undefined}
+            >
+              <span aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+            </Link>
+          ))}
         </nav>
         <div className={styles.sidebarFoot}>
           <b>READ ONLY</b>
-          <span>Data disinkronkan otomatis dari tracker Diksilab.</span>
+          <span>Data proyek dimuat dari workspace Diksilab.</span>
           {onBackToWorkspace ? (
             <button type="button" onClick={onBackToWorkspace}>
               ← Ruang kerja Diksilab
@@ -564,8 +570,8 @@ export function PublicMemberDashboard({
       <section className={styles.main}>
         <header className={styles.topbar}>
           <div>
-            <p>CLIENT DASHBOARD / {data.cycle_name.toUpperCase()}</p>
-            <h1>{data.client_name}</h1>
+            <p>DR. SANTI&apos;S STORY · RUANG KLIEN</p>
+            <h1>{pageTitle[page]}</h1>
           </div>
           <div className={styles.topStatus}>
             <i /> Live workspace{" "}
@@ -574,7 +580,7 @@ export function PublicMemberDashboard({
             </span>
           </div>
         </header>
-        <section id="overview" className={styles.metrics}>
+        {page === "overview" ? <section id="overview" className={styles.metrics}>
           <article className={styles.metricLime}>
             <small>STATUS PROYEK</small>
             <strong>{data.project_status}</strong>
@@ -582,7 +588,7 @@ export function PublicMemberDashboard({
             <b>↗</b>
           </article>
           <article className={styles.metricPurple}>
-            <small>PROGRES CYCLE</small>
+            <small>PROGRES PROYEK</small>
             <strong>{data.progress}%</strong>
             <span>
               {formatDate(data.cycle_start)} — {formatDate(data.cycle_end)}
@@ -601,9 +607,9 @@ export function PublicMemberDashboard({
             <span>Dicatat pada tracker</span>
             <b>◌</b>
           </article>
-        </section>
-        <KickoffLaunchpad companyId={companyId} projectId={projectId} />
-        <section id="calendar" className={styles.cyclePanel}>
+        </section> : null}
+        {page === "launchpad" ? <KickoffLaunchpad companyId={companyId} projectId={projectId} /> : null}
+        {page === "calendar" ? <section id="calendar" className={styles.cyclePanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>KALENDER BULANAN</p>
@@ -640,8 +646,8 @@ export function PublicMemberDashboard({
             Kalender otomatis menampilkan bulan berjalan dan bulan berikutnya.
             Meeting ditandai bersama task yang dibagikan oleh tim Diksilab.
           </p>
-        </section>
-        <section id="cycle-report" className={styles.activityPanel}>
+        </section> : null}
+        {page === "overview" ? <section id="cycle-report" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>RINGKASAN CYCLE</p>
@@ -681,8 +687,8 @@ export function PublicMemberDashboard({
               </article>
             ))}
           </div>
-        </section>
-        <section id="roadmap" className={styles.activityPanel}>
+        </section> : null}
+        {page === "project" ? <section id="roadmap" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>ROADMAP</p>
@@ -711,8 +717,8 @@ export function PublicMemberDashboard({
               </article>
             ))}
           </div>
-        </section>
-        <section
+        </section> : null}
+        {page === "project" ? <section
           id="brand"
           className={`${styles.activityPanel} ${brand.guideline}`}
         >
@@ -757,8 +763,8 @@ export function PublicMemberDashboard({
               </p>
             </article>
           </div>
-        </section>
-        <section id="delivery" className={styles.activityPanel}>
+        </section> : null}
+        {page === "project" ? <section id="delivery" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>DELIVERY WORKSTREAMS</p>
@@ -793,8 +799,8 @@ export function PublicMemberDashboard({
               </article>
             ))}
           </div>
-        </section>
-        <section id="planned" className={styles.activityPanel}>
+        </section> : null}
+        {page === "project" ? <section id="planned" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>YANG AKAN DILAKUKAN</p>
@@ -805,8 +811,8 @@ export function PublicMemberDashboard({
             </span>
           </div>
           <ActivityTable items={data.planned_work} />
-        </section>
-        <section id="completed" className={styles.activityPanel}>
+        </section> : null}
+        {page === "project" ? <section id="completed" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
               <p>YANG TELAH DILAKUKAN</p>
@@ -817,8 +823,8 @@ export function PublicMemberDashboard({
             </span>
           </div>
           <ActivityTable items={data.completed_work} completed />
-        </section>
-        <section id="updates" className={styles.dualGrid}>
+        </section> : null}
+        {page === "collaboration" ? <section id="updates" className={styles.dualGrid}>
           <section className={styles.activityPanel}>
             <div className={styles.panelTitle}>
               <div>
@@ -882,9 +888,9 @@ export function PublicMemberDashboard({
             <div className={styles.panelTitle}>
               <div>
                 <p>KPI &amp; REPORTING</p>
-                <h2>Baseline Cycle 0</h2>
+                <h2>Baseline &amp; kinerja proyek</h2>
               </div>
-              <span>AKAN DIPERBARUI</span>
+              <span>BASELINE CYCLE 0 · TRACKING CYCLE 1</span>
             </div>
             <div className={styles.kpiGrid}>
               {data.metrics.map((metric) => (
@@ -911,42 +917,13 @@ export function PublicMemberDashboard({
               ))}
             </div>
           </section>
-        </section>
-        <section id="documents" className={styles.activityPanel}>
-          <div className={styles.panelTitle}>
-            <div>
-              <p>DOKUMEN</p>
-              <h2>Katalog dokumen proyek</h2>
-            </div>
-            <span>FILE TETAP PRIVAT</span>
-          </div>
-          <div className={styles.documentGrid}>
-            {data.documents.map((document) => (
-              <article key={document.title}>
-                <b>▤</b>
-                <div>
-                  <strong>{document.title}</strong>
-                  <span>
-                    {document.type} · {document.version}
-                  </span>
-                  <small>
-                    {document.status} · diperbarui {document.updated}
-                  </small>
-                </div>
-                <i>Terproteksi</i>
-              </article>
-            ))}
-            {data.documents.length === 0 ? (
-              <p>
-                File proyek dikelompokkan pada task terkait di Ruang Aksi Klien,
-                agar versi, status review, dan approval selalu konsisten.
-              </p>
-            ) : null}
-          </div>
-        </section>
-        <ClientProjectActions companyId={companyId} projectId={projectId} />
-        <ClientMeetingNotes projectId={projectId} />
-        <ClientCollaboration companyId={companyId} projectId={projectId} />
+        </section> : null}
+        {page === "documents" ? <ClientDocumentLibrary companyId={companyId} projectId={projectId} /> : null}
+        {page === "collaboration" ? <>
+          <ClientProjectActions companyId={companyId} projectId={projectId} />
+          <ClientMeetingNotes projectId={projectId} />
+          <ClientCollaboration companyId={companyId} projectId={projectId} />
+        </> : null}
         <footer>
           DIKSILAB CLIENT DASHBOARD <span>•</span> DATA PROYEK BERSIFAT RAHASIA
         </footer>

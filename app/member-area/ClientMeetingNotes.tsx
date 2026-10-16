@@ -122,7 +122,11 @@ export function ClientMeetingNotes({
         .storage.from("client-documents")
         .createSignedUrl(file.storage_path, 60, { download: file.name });
       if (signedUrlError) throw signedUrlError;
-      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = data.signedUrl;
+      downloadLink.target = "_blank";
+      downloadLink.rel = "noopener noreferrer";
+      downloadLink.click();
       setMessage(
         "File dibuka melalui tautan aman yang berlaku selama satu menit.",
       );

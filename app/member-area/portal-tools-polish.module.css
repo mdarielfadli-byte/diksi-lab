@@ -1,0 +1,21 @@
+.uploadMessage {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #a991e7;
+  background: #fff;
+  color: #30244c;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.uploadDrop:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.uploadDrop:focus-visible,
+.tabButton:focus-visible {
+  outline: 3px solid #171913;
+  outline-offset: 3px;
+}

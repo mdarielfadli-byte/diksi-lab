@@ -447,7 +447,8 @@ export function TeamWorkspace({
 
   async function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     if (!projectId || !companyId) return;
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
@@ -469,7 +470,7 @@ export function TeamWorkspace({
           created_by: auth.user.id,
         });
       if (insertError) throw insertError;
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage(
         "Berhasil: task proyek dibuat. Progres dan audit log diperbarui otomatis.",
       );
@@ -519,38 +520,23 @@ export function TeamWorkspace({
   async function updateTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedTask) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sesi masuk berakhir.");
       const status = String(form.get("status"));
-      const { error: updateError } = await supabase
-        .from("project_tasks")
-        .update({
-          status,
-          progress: Number(form.get("progress")),
-          description: String(form.get("description") ?? "").trim() || null,
-          owner_label: String(form.get("owner_label") ?? "").trim() || null,
-          blocked_reason:
-            status === "blocked"
-              ? String(form.get("blocked_reason") ?? "").trim() ||
-                "Menunggu tindak lanjut"
-              : null,
-          due_on: String(form.get("due_on") || "") || null,
-          client_visible: form.get("client_visible") === "on",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", selectedTask.id);
-      if (updateError) throw updateError;
       const file = form.get("attachment");
+      const hasFile = file instanceof File && file.size > 0;
+      if (hasFile && file.size > 25 * 1024 * 1024)
+        throw new Error("Ukuran file maksimal 25 MB.");
+      let storagePath: string | null = null;
       if (file instanceof File && file.size > 0) {
-        if (file.size > 25 * 1024 * 1024)
-          throw new Error("Ukuran file maksimal 25 MB.");
         const extension = file.name.includes(".")
           ? file.name.split(".").pop()
           : "file";
-        const storagePath = `${companyId}/${crypto.randomUUID()}.${extension}`;
+        storagePath = `${companyId}/${crypto.randomUUID()}.${extension}`;
         const { error: uploadError } = await supabase.storage
           .from("client-documents")
           .upload(storagePath, file, {
@@ -570,11 +556,41 @@ export function TeamWorkspace({
           review_status: status === "needs_review" ? "needs_review" : "draft",
           client_visible: form.get("file_client_visible") === "on",
         });
-        if (fileError) throw fileError;
+        if (fileError) {
+          await supabase.storage.from("client-documents").remove([storagePath]);
+          throw fileError;
+        }
+      }
+      const { error: updateError } = await supabase
+        .from("project_tasks")
+        .update({
+          status,
+          progress: Number(form.get("progress")),
+          description: String(form.get("description") ?? "").trim() || null,
+          owner_label: String(form.get("owner_label") ?? "").trim() || null,
+          blocked_reason:
+            status === "blocked"
+              ? String(form.get("blocked_reason") ?? "").trim() ||
+                "Menunggu tindak lanjut"
+              : null,
+          due_on: String(form.get("due_on") || "") || null,
+          client_visible: form.get("client_visible") === "on",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", selectedTask.id);
+      if (updateError) {
+        if (storagePath) {
+          await supabase
+            .from("task_files")
+            .delete()
+            .eq("storage_path", storagePath);
+          await supabase.storage.from("client-documents").remove([storagePath]);
+        }
+        throw updateError;
       }
       if (updateFileInput.current) updateFileInput.current.value = "";
       setMessage(
-        file instanceof File && file.size > 0
+        hasFile
           ? "Task dan file output diperbarui. Progress proyek mengikuti status task."
           : "Status task diperbarui.",
       );
@@ -583,7 +599,8 @@ export function TeamWorkspace({
   async function addComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedTask || !companyId) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
@@ -598,7 +615,7 @@ export function TeamWorkspace({
           visibility: String(form.get("visibility")),
         });
       if (insertError) throw insertError;
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("Komentar tersimpan.");
     });
   }
@@ -637,7 +654,8 @@ export function TeamWorkspace({
   async function addChecklist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedTask) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const { error: insertError } = await getSupabaseBrowserClient()
         .from("task_checklist_items")
@@ -648,7 +666,7 @@ export function TeamWorkspace({
           position: checklist.length,
         });
       if (insertError) throw insertError;
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("Checklist ditambahkan.");
     });
   }
@@ -695,7 +713,8 @@ export function TeamWorkspace({
   async function addMeeting(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!companyId || !projectId) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
@@ -717,7 +736,7 @@ export function TeamWorkspace({
         .select("id")
         .single();
       if (meetingError) throw meetingError;
-      event.currentTarget.reset();
+      formElement.reset();
       setSelectedMeetingId(meeting.id);
       setMessage(
         "Agenda meeting tersimpan. Tambahkan MoM dan tindak lanjut setelah diskusi.",
@@ -727,36 +746,23 @@ export function TeamWorkspace({
   async function updateMeeting(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedMeeting || !companyId || !projectId) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sesi masuk berakhir.");
       const meetingAt = String(form.get("meeting_at") ?? "");
-      const { error: meetingError } = await supabase
-        .from("project_meetings")
-        .update({
-          title: String(form.get("title") ?? "").trim(),
-          meeting_at: new Date(meetingAt).toISOString(),
-          agenda: String(form.get("agenda") ?? "").trim(),
-          discussion_points: String(form.get("discussion_points") ?? "").trim(),
-          minutes_of_meeting: String(
-            form.get("minutes_of_meeting") ?? "",
-          ).trim(),
-          status: String(form.get("status")),
-          client_visible: form.get("client_visible") === "on",
-          updated_by: auth.user.id,
-        })
-        .eq("id", selectedMeeting.id);
-      if (meetingError) throw meetingError;
       const file = form.get("attachment");
+      const hasFile = file instanceof File && file.size > 0;
+      if (hasFile && file.size > 25 * 1024 * 1024)
+        throw new Error("Ukuran file maksimal 25 MB.");
+      let storagePath: string | null = null;
       if (file instanceof File && file.size > 0) {
-        if (file.size > 25 * 1024 * 1024)
-          throw new Error("Ukuran file maksimal 25 MB.");
         const extension = file.name.includes(".")
           ? file.name.split(".").pop()
           : "file";
-        const storagePath =
+        storagePath =
           companyId +
           "/meetings/" +
           selectedMeeting.id +
@@ -784,16 +790,40 @@ export function TeamWorkspace({
             byte_size: file.size,
             client_visible: form.get("file_client_visible") === "on",
           });
-        if (fileError) throw fileError;
+        if (fileError) {
+          await supabase.storage.from("client-documents").remove([storagePath]);
+          throw fileError;
+        }
+      }
+      const { error: meetingError } = await supabase
+        .from("project_meetings")
+        .update({
+          title: String(form.get("title") ?? "").trim(),
+          meeting_at: new Date(meetingAt).toISOString(),
+          agenda: String(form.get("agenda") ?? "").trim(),
+          discussion_points: String(form.get("discussion_points") ?? "").trim(),
+          minutes_of_meeting: String(form.get("minutes_of_meeting") ?? "").trim(),
+          status: String(form.get("status")),
+          client_visible: form.get("client_visible") === "on",
+          updated_by: auth.user.id,
+        })
+        .eq("id", selectedMeeting.id);
+      if (meetingError) {
+        if (storagePath) {
+          await supabase.from("meeting_files").delete().eq("storage_path", storagePath);
+          await supabase.storage.from("client-documents").remove([storagePath]);
+        }
+        throw meetingError;
       }
       if (meetingFileInput.current) meetingFileInput.current.value = "";
-      setMessage("Detail meeting, MoM, dan file telah diperbarui.");
+      setMessage(hasFile ? "Detail meeting, MoM, dan file telah diperbarui." : "Detail meeting dan MoM berhasil diperbarui.");
     });
   }
   async function addMeetingAction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedMeeting || !companyId || !projectId) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const { data: auth } = await getSupabaseBrowserClient().auth.getUser();
       if (!auth.user) throw new Error("Sesi masuk berakhir.");
@@ -810,7 +840,7 @@ export function TeamWorkspace({
           created_by: auth.user.id,
         });
       if (itemError) throw itemError;
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("Tindak lanjut meeting ditambahkan.");
     });
   }
@@ -829,7 +859,8 @@ export function TeamWorkspace({
   async function addCalendarEntry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!calendarDate || !companyId || !projectId) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await withAction(async () => {
       const supabase = getSupabaseBrowserClient();
       const { data: auth } = await supabase.auth.getUser();
@@ -876,7 +907,7 @@ export function TeamWorkspace({
         if (taskError) throw taskError;
         setMessage("Action ditambahkan ke kalender dan board task.");
       }
-      event.currentTarget.reset();
+      formElement.reset();
       setCalendarDate(null);
     });
   }
