@@ -121,20 +121,20 @@ type DashboardData = {
 
 type DashboardPage = "overview" | "project" | "calendar" | "documents" | "launchpad" | "collaboration";
 const dashboardNavigation: Array<{ id: DashboardPage; label: string; icon: string }> = [
-  { id: "overview", label: "Ringkasan", icon: "◈" },
-  { id: "project", label: "Proyek & progress", icon: "◷" },
-  { id: "calendar", label: "Kalender", icon: "▦" },
-  { id: "documents", label: "Dokumen & file", icon: "▤" },
+  { id: "overview", label: "Overview", icon: "◈" },
+  { id: "project", label: "Project progress", icon: "◷" },
+  { id: "calendar", label: "Calendar", icon: "▦" },
+  { id: "documents", label: "Files & links", icon: "▤" },
   { id: "launchpad", label: "Launchpad", icon: "✳" },
-  { id: "collaboration", label: "Kolaborasi", icon: "◌" },
+  { id: "collaboration", label: "Feedback & approvals", icon: "◌" },
 ];
 const pageTitle: Record<DashboardPage, string> = {
-  overview: "Ringkasan proyek",
-  project: "Proyek & progress",
-  calendar: "Kalender proyek",
-  documents: "Dokumen & file",
+  overview: "Project overview",
+  project: "Project progress",
+  calendar: "Project calendar",
+  documents: "Files & links",
   launchpad: "Project Launchpad",
-  collaboration: "Kolaborasi & approval",
+  collaboration: "Feedback & approvals",
 };
 
 function formatDate(value: string) {
@@ -174,8 +174,8 @@ function ActivityTable({
       <table className={styles.activityTable}>
         <thead>
           <tr>
-            <th>Waktu</th>
-            <th>Aktivitas</th>
+            <th>Jadwal</th>
+            <th>Task / aktivitas</th>
             <th>PIC</th>
             <th>Status</th>
           </tr>
@@ -203,7 +203,7 @@ function ActivityTable({
                   )}
                 </small>
                 {!completed && item.scheduled_for && new Date(`${item.scheduled_for}T00:00:00`).getTime() < new Date().setHours(0, 0, 0, 0) ? (
-                  <small className={styles.overdue}>Tenggat awal terlewat · perlu dijadwalkan ulang</small>
+                  <small className={styles.overdue}>Deadline awal terlewat · perlu reschedule</small>
                 ) : null}
               </td>
               <td>{item.owner}</td>
@@ -525,8 +525,8 @@ export function PublicMemberDashboard({
         <b>
           DIKSI<span>LAB</span>
         </b>
-        <p>{error || "Menyinkronkan dashboard klien…"}</p>
-        <button onClick={() => void loadDashboard()}>Coba lagi</button>
+        <p>{error || "Loading project update…"}</p>
+        <button onClick={() => void loadDashboard()}>Muat ulang</button>
       </main>
     );
   return (
@@ -555,8 +555,8 @@ export function PublicMemberDashboard({
           ))}
         </nav>
         <div className={styles.sidebarFoot}>
-          <b>READ ONLY</b>
-          <span>Data proyek dimuat dari workspace Diksilab.</span>
+          <b>CLIENT VIEW</b>
+          <span>Project update di-sync dari workspace Diksilab.</span>
           {onBackToWorkspace ? (
             <button type="button" onClick={onBackToWorkspace}>
               ← Ruang kerja Diksilab
@@ -582,13 +582,13 @@ export function PublicMemberDashboard({
         </header>
         {page === "overview" ? <section id="overview" className={styles.metrics}>
           <article className={styles.metricLime}>
-            <small>STATUS PROYEK</small>
+            <small>PROJECT STATUS</small>
             <strong>{data.project_status}</strong>
             <span>{data.cycle_name} berjalan</span>
             <b>↗</b>
           </article>
           <article className={styles.metricPurple}>
-            <small>PROGRES PROYEK</small>
+            <small>PROJECT PROGRESS</small>
             <strong>{data.progress}%</strong>
             <span>
               {formatDate(data.cycle_start)} — {formatDate(data.cycle_end)}
@@ -596,7 +596,7 @@ export function PublicMemberDashboard({
             <b>◴</b>
           </article>
           <article className={styles.metricBlue}>
-            <small>PEKERJAAN TRACKER</small>
+            <small>ACTIVE TASKS</small>
             <strong>{data.tracker_count}</strong>
             <span>{data.planned_work.length} agenda berikutnya</span>
             <b>▥</b>
@@ -612,8 +612,8 @@ export function PublicMemberDashboard({
         {page === "calendar" ? <section id="calendar" className={styles.cyclePanel}>
           <div className={styles.panelTitle}>
             <div>
-              <p>KALENDER BULANAN</p>
-              <h2>Jadwal saat ini dan bulan berikutnya</h2>
+              <p>PROJECT CALENDAR</p>
+              <h2>Jadwal bulan ini & bulan depan</h2>
             </div>
             <div className={styles.calendarControls}>
               <button
@@ -650,8 +650,8 @@ export function PublicMemberDashboard({
         {page === "overview" ? <section id="cycle-report" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
-              <p>RINGKASAN CYCLE</p>
-              <h2>Apa yang bergerak dan keputusan berikutnya</h2>
+              <p>CYCLE SNAPSHOT</p>
+              <h2>Progress saat ini & next steps</h2>
             </div>
             <span>LIVE DARI WORKSPACE</span>
           </div>
@@ -673,7 +673,7 @@ export function PublicMemberDashboard({
               <span className={styles.update_approved}>Selesai</span>
               <div>
                 <b>{data.completed_work.length} task tercatat selesai</b>
-                <p>Lihat daftar detail pada bagian “Telah dilakukan”.</p>
+                <p>Lihat detailnya di bagian “Completed work”.</p>
               </div>
             </article>
             {data.client_actions.map((item) => (
@@ -691,8 +691,8 @@ export function PublicMemberDashboard({
         {page === "project" ? <section id="roadmap" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
-              <p>ROADMAP</p>
-              <h2>Arah pengembangan proyek</h2>
+              <p>PROJECT ROADMAP</p>
+              <h2>Arah dan tahapan project</h2>
             </div>
             <span>2026 — 2027</span>
           </div>
@@ -768,7 +768,7 @@ export function PublicMemberDashboard({
           <div className={styles.panelTitle}>
             <div>
               <p>DELIVERY WORKSTREAMS</p>
-              <h2>Yang akan dibangun dan diukur</h2>
+              <h2>Yang akan dikerjakan & diukur</h2>
             </div>
             <span>6 WORKSTREAM</span>
           </div>
@@ -803,8 +803,8 @@ export function PublicMemberDashboard({
         {page === "project" ? <section id="planned" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
-              <p>YANG AKAN DILAKUKAN</p>
-              <h2>Agenda dan PIC</h2>
+              <p>UPCOMING WORK</p>
+              <h2>Jadwal kerja & PIC</h2>
             </div>
             <span className={styles.badgeSchedule}>
               {data.planned_work.length} TERJADWAL
@@ -815,8 +815,8 @@ export function PublicMemberDashboard({
         {page === "project" ? <section id="completed" className={styles.activityPanel}>
           <div className={styles.panelTitle}>
             <div>
-              <p>YANG TELAH DILAKUKAN</p>
-              <h2>Aktivitas yang tercatat</h2>
+              <p>COMPLETED WORK</p>
+              <h2>Yang sudah selesai</h2>
             </div>
             <span className={styles.badgeDone}>
               {data.completed_work.length} SELESAI
