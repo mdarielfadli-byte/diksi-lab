@@ -367,6 +367,12 @@
 .activityTable td:nth-child(2) small {
   display: block;
 }
+
+.activityTable td:nth-child(2) .overdue {
+  margin-top: 6px;
+  color: #ffb0a8;
+  font-weight: 650;
+}
 .activityTable td:nth-child(2) small {
   margin-top: 4px;
   color: #9ba2c5;
@@ -375,9 +381,11 @@
 }
 .activityTable td:nth-child(2) small a {
   display: inline-block;
-  margin-left: 6px;
+  margin: 4px 8px 0 0;
   color: #b7ff21;
+  font-weight: 700;
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .activityTable td:nth-child(3) {
   color: #a8aec9;

@@ -184,10 +184,11 @@ export function ClientProjectActions({
   async function addComment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
+    const formElement = event.currentTarget;
     setError("");
     setMessage("");
     try {
-      const form = new FormData(event.currentTarget);
+      const form = new FormData(formElement);
       const body = String(form.get("body") ?? "").trim();
       if (!body) return;
       const supabase = getSupabaseBrowserClient();
@@ -203,7 +204,7 @@ export function ClientProjectActions({
           visibility: "client",
         });
       if (insertError) throw insertError;
-      event.currentTarget.reset();
+      formElement.reset();
       setMessage("Komentar Anda sudah tersimpan di task ini.");
       await load();
     } catch (caught) {
@@ -223,7 +224,11 @@ export function ClientProjectActions({
         .storage.from("client-documents")
         .createSignedUrl(file.storage_path, 60, { download: file.name });
       if (signedUrlError) throw signedUrlError;
-      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = data.signedUrl;
+      downloadLink.target = "_blank";
+      downloadLink.rel = "noopener noreferrer";
+      downloadLink.click();
       setMessage(
         "File dibuka melalui tautan aman yang berlaku selama satu menit.",
       );

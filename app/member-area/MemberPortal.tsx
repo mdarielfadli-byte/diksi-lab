@@ -16,18 +16,36 @@ type Activity = { id: string; detail: string; created_at: string };
 type Membership = { company_id: string; role: string };
 type PortalData = { company: Company; project: Project | null; cycle: Cycle | null; workItems: WorkItem[]; activities: Activity[]; spend: AdSpend[]; documents: DocumentItem[]; role: string; isSuperAdmin: boolean };
 
+export type ClientAreaPage = "overview" | "project" | "calendar" | "documents" | "launchpad" | "collaboration";
+const dashboardViewStorageKey = "diksilab:member-area-dashboard-view";
+
+function readSavedDashboardView(): { company: Company; projectId: string | null } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const savedView = window.sessionStorage.getItem(dashboardViewStorageKey);
+    if (!savedView) return null;
+    const parsed = JSON.parse(savedView) as { company?: Partial<Company>; projectId?: string | null };
+    const company = parsed.company;
+    return company?.id && company.name && company.slug && (parsed.projectId === null || typeof parsed.projectId === "string")
+      ? { company: { id: company.id, name: company.name, slug: company.slug }, projectId: parsed.projectId }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function initials(value: string) { return value.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "DL"; }
 function formatDate(value: string | null) { return value ? new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value}T00:00:00`)) : "Belum dijadwalkan"; }
 function formatActivityDate(value: string) { return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(value)); }
 
-export function MemberPortal() {
+export function MemberPortal({ initialPage = "overview" }: { initialPage?: ClientAreaPage }) {
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [data, setData] = useState<PortalData | null>(null);
-  const [dashboardView, setDashboardView] = useState<{ company: Company; projectId: string | null } | null>(null);
+  const [dashboardView, setDashboardView] = useState<{ company: Company; projectId: string | null } | null>(readSavedDashboardView);
 
   const loadPortal = useCallback(async () => {
     try {
@@ -81,14 +99,25 @@ export function MemberPortal() {
     return () => { window.clearTimeout(initialLoad); listener.subscription.unsubscribe(); };
   }, [loadPortal]);
 
+  useEffect(() => {
+    if (!data) return;
+    const canViewDashboard = data.isSuperAdmin || ["admin", "team"].includes(data.role);
+    if (canViewDashboard && dashboardView) {
+      window.sessionStorage.setItem(dashboardViewStorageKey, JSON.stringify(dashboardView));
+      return;
+    }
+    if (!canViewDashboard) window.sessionStorage.removeItem(dashboardViewStorageKey);
+  }, [data, dashboardView]);
+
   async function signInWithGoogle() {
     setError(""); setNotice(""); setSending(true);
     try {
-      const { error: oauthError } = await getSupabaseBrowserClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/member-area` } });
+      const destination = initialPage === "overview" ? "" : `/${initialPage}`;
+      const { error: oauthError } = await getSupabaseBrowserClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/member-area${destination}` } });
       if (oauthError) throw oauthError;
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Masuk dengan Google belum dapat dimulai. Pastikan Google OAuth sudah diaktifkan di Supabase."); setSending(false); }
   }
-  async function signOut() { await getSupabaseBrowserClient().auth.signOut(); setData(null); setNotice("Anda telah keluar dari ruang klien."); }
+  async function signOut() { window.sessionStorage.removeItem(dashboardViewStorageKey); await getSupabaseBrowserClient().auth.signOut(); setData(null); setDashboardView(null); setNotice("Anda telah keluar dari ruang klien."); }
   async function uploadFile(file: File) {
     if (!data) return;
     if (file.size > 25 * 1024 * 1024) throw new Error("Ukuran file maksimal 25 MB.");
@@ -106,9 +135,9 @@ export function MemberPortal() {
   if (loading) return <main className={live.state}><div className={live.card}>Menyiapkan ruang klien Diksilab…</div></main>;
   if (!userEmail) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>MEMBER AREA</p><h1>Masuk ke ruang kerja Anda.</h1><p>Tim Diksilab dan klien masuk dengan akun Google masing-masing. Akses proyek hanya aktif setelah ditugaskan oleh super admin.</p><button type="button" onClick={() => void signInWithGoogle()} disabled={sending}>{sending ? "Mengalihkan ke Google…" : "Lanjutkan dengan Google"}</button><small>Hanya akun Google yang telah diberi akses yang dapat membuka data proyek.</small>{notice ? <p className={live.notice}>{notice}</p> : null}{error ? <p className={live.error}>{error}</p> : null}</section></main>;
   if (!data) return <main className={live.state}><section className={live.card}><Link className={live.brand} href="/">DIKSI<span>LAB</span></Link><p className={live.eyebrow}>AKSES BELUM DIAKTIFKAN</p><h1>Halo, {userEmail}</h1><p>{notice || "Akses ruang klien Anda sedang diperiksa."}</p><button onClick={signOut}>Keluar</button>{error ? <p className={live.error}>{error}</p> : null}</section></main>;
-  if (dashboardView) return <PublicMemberDashboard companySlug={dashboardView.company.slug} companyId={dashboardView.company.id} projectId={dashboardView.projectId} onSignOut={() => void signOut()} onBackToWorkspace={() => setDashboardView(null)} />;
+  if (dashboardView && (data.isSuperAdmin || ["admin", "team"].includes(data.role))) return <PublicMemberDashboard companySlug={dashboardView.company.slug} companyId={dashboardView.company.id} projectId={dashboardView.projectId} onSignOut={() => void signOut()} onBackToWorkspace={() => { window.sessionStorage.removeItem(dashboardViewStorageKey); setDashboardView(null); }} page={initialPage} />;
   if (data.isSuperAdmin || ["admin", "team"].includes(data.role)) return <TeamWorkspace userEmail={userEmail} initialCompanyId={data.company.id} isSuperAdmin={data.isSuperAdmin} onSignOut={signOut} onViewDashboard={(company, projectId) => setDashboardView({ company, projectId })} />;
-  if (data.role === "client") return <PublicMemberDashboard companySlug={data.company.slug} companyId={data.company.id} projectId={data.project?.id ?? null} onSignOut={() => void signOut()} />;
+  if (data.role === "client") return <PublicMemberDashboard companySlug={data.company.slug} companyId={data.company.id} projectId={data.project?.id ?? null} onSignOut={() => void signOut()} page={initialPage} />;
   const displayName = userEmail.split("@")[0];
   return <div className={styles.portal}><aside className={styles.sidebar}><Link className={styles.brand} href="/" aria-label="Kembali ke beranda Diksilab">DIKSI<span>LAB</span></Link><div className={styles.workspace}><span className={styles.workspaceMark}>{initials(data.company.name)}</span><div><strong>{data.company.name}</strong><small>Ruang klien — hanya baca</small></div></div><nav className={styles.menu} aria-label="Navigasi ruang klien"><a className={styles.active} href="#ringkasan">Ringkasan</a><a href="#proyek">Proyek</a><a href="#aktivitas">Aktivitas</a><a href="#dokumen">Dokumen</a></nav><div className={styles.support}><p>Butuh bantuan?</p><span>Hubungi project lead Anda untuk hal yang perlu dibicarakan.</span><a href="mailto:hello@diksilab.com">Hubungi Diksilab ↗</a></div><div className={styles.user}><span>{initials(displayName)}</span><div><b>{displayName}</b><small>client · lihat saja</small></div><button onClick={signOut} aria-label="Keluar">↗</button></div></aside><main className={styles.content}><header className={styles.topbar}><div className={styles.breadcrumb}><span>Ruang klien</span><i>/</i><b>Ringkasan</b></div><div className={styles.topActions}><span>Data tersinkron dari ruang kerja Diksilab</span></div></header><section className={styles.intro} id="ringkasan"><div><p className={styles.eyebrow}>SELAMAT DATANG, {displayName.toUpperCase()}</p><h1>Semua yang sedang <em>bergerak.</em></h1><p>Data proyek, kalender, pengeluaran iklan, dan dokumen di bawah ini bersumber dari ruang kerja perusahaan Anda.</p></div><div className={styles.month}><span>{data.cycle?.status ?? "PROJECT"}</span><b>{data.cycle?.name ?? data.project?.name ?? "Belum ada proyek"}</b><small>● Data aktif</small></div></section><section className={styles.stats} aria-label="Ringkasan proyek"><article><span>PROGRES PROYEK</span><strong>{data.project?.progress ?? 0}<span>%</span></strong><div className={styles.track}><b style={{ width: `${data.project?.progress ?? 0}%` }} /></div><small>{data.project?.due_on ? `Target selesai ${formatDate(data.project.due_on)}` : "Target belum ditetapkan"}</small></article><article><span>PEKERJAAN AKTIF</span><strong>{String(metrics.active).padStart(2, "0")}</strong><p>Item pada kalender dan produksi<br />yang belum selesai.</p></article><article><span>ITEM PERLU DITINJAU</span><strong>{String(metrics.review).padStart(2, "0")}</strong><p><a href="#proyek">Lihat pekerjaan proyek <i>→</i></a></p></article></section><section className={styles.project} id="proyek"><div className={styles.sectionHead}><div><p className={styles.eyebrow}>PROYEK UTAMA</p><h2>{data.project?.name ?? "Belum ada proyek aktif"}</h2></div><a href="#aktivitas">Lihat semua aktivitas <span>→</span></a></div><div className={styles.projectBody}><div className={styles.roadmap}><div className={styles.roadmapTop}><p>Cycle aktif</p><span>{data.cycle ? `${formatDate(data.cycle.starts_on)} — ${formatDate(data.cycle.ends_on)}` : "Belum dibuat"}</span></div><div className={live.cycleSummary}>{data.cycle?.summary ?? "Tim akan menambahkan ringkasan cycle setelah proyek dan jadwal disiapkan."}</div></div><aside className={styles.review}><div><span className={styles.alert}>✓</span><p className={styles.eyebrow}>AKSES TERLINDUNGI</p></div><h3>Ruang ini hanya menampilkan data perusahaan Anda.</h3><p>Klien tidak dapat mengubah pekerjaan, progress, atau biaya.</p></aside></div></section><PortalTools workItems={data.workItems} spend={data.spend} documents={data.documents} onUpload={uploadFile} canUpload={false} /><section className={styles.lower}><section className={styles.taskPanel}><div className={styles.sectionHead}><div><p className={styles.eyebrow}>YANG SEDANG DIKERJAKAN</p><h2>Daftar pekerjaan</h2></div></div><div className={styles.taskList}>{data.workItems.slice(0, 6).map((item) => <article key={item.id}><span className={styles.state}>{item.status}</span><div><b>{item.title}</b><small>{item.owner_name ?? item.channel}</small></div><time>{formatDate(item.scheduled_for)}</time></article>)}{data.workItems.length === 0 ? <p className={live.empty}>Belum ada pekerjaan yang dipublikasikan.</p> : null}</div></section><section className={styles.activityPanel} id="aktivitas"><div className={styles.sectionHead}><div><p className={styles.eyebrow}>JEJAK KERJA</p><h2>Aktivitas terbaru</h2></div></div><div className={styles.activityList}>{data.activities.map((activity, index) => <article key={activity.id}><span className={index === 0 ? styles.fresh : ""} /><div><small>{formatActivityDate(activity.created_at)}</small><p>{activity.detail}</p></div></article>)}{data.activities.length === 0 ? <p className={live.empty}>Aktivitas akan muncul setelah tim mulai memperbarui proyek.</p> : null}</div></section></section><footer className={styles.footer}>Diksilab Client Area <span>•</span> Data proyek bersifat rahasia</footer></main></div>;
 }
