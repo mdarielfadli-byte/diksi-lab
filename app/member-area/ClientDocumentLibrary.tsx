@@ -135,19 +135,19 @@ export function ClientDocumentLibrary({ companyId, projectId }: { companyId: str
     <section className={styles.library} aria-labelledby="document-library-title">
       <header className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>REPOSITORY PROYEK</p>
-          <h2 id="document-library-title">Dokumen dan file proyek</h2>
-          <p>Temukan materi kickoff, deliverable task, dan lampiran meeting dalam satu tempat. Semua file tetap privat dan hanya dapat diunduh oleh anggota proyek.</p>
+          <p className={styles.eyebrow}>PROJECT FILES</p>
+          <h2 id="document-library-title">Files, links & deliverables</h2>
+          <p>Materi kickoff, hasil kerja, dan lampiran meeting ada di sini. File hanya bisa dibuka oleh anggota project yang memiliki akses.</p>
         </div>
-        <div className={styles.total}><strong>{files.length}</strong><span>file tersedia</span></div>
+        <div className={styles.total}><strong>{files.length}</strong><span>files shared</span></div>
       </header>
 
       <div className={styles.toolbar}>
         <label className={styles.search}>
           <span aria-hidden="true">⌕</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari nama file atau aktivitas…" aria-label="Cari dokumen" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari file, task, atau meeting…" aria-label="Cari file proyek" />
         </label>
-        <div className={styles.filters} role="group" aria-label="Filter jenis file">
+        <div className={styles.filters} role="group" aria-label="Filter kategori file">
           {filters.map((item) => (
             <button key={item} type="button" className={filter === item ? styles.selectedFilter : ""} onClick={() => setFilter(item)} aria-pressed={filter === item}>{item}</button>
           ))}
@@ -155,9 +155,9 @@ export function ClientDocumentLibrary({ companyId, projectId }: { companyId: str
       </div>
 
       {notice ? <p className={styles.notice} role="status">{notice}</p> : null}
-      {error ? <p className={styles.error} role="alert">File belum dapat dimuat atau diunduh: {error}</p> : null}
-      {loading ? <p className={styles.empty}>Memuat repository proyek…</p> : null}
-      {!loading && !projectId ? <p className={styles.empty}>Belum ada proyek yang terhubung ke ruang klien ini.</p> : null}
+      {error ? <p className={styles.error} role="alert">File belum bisa dimuat atau diunduh: {error}</p> : null}
+      {loading ? <p className={styles.empty}>Loading project files…</p> : null}
+      {!loading && !projectId ? <p className={styles.empty}>Belum ada project yang terhubung ke ruang ini.</p> : null}
       {!loading && projectId && visibleFiles.length ? (
         <div className={styles.fileList}>
           {visibleFiles.map((file) => (
@@ -169,14 +169,14 @@ export function ClientDocumentLibrary({ companyId, projectId }: { companyId: str
                 <div className={styles.meta}><span>{file.source}</span><i>·</i><span>{formatSize(file.byte_size)}</span><i>·</i><time dateTime={file.created_at}>{formatDate(file.created_at)}</time></div>
               </div>
               <button className={styles.download} type="button" onClick={() => void download(file)} disabled={downloadingId === file.id}>
-                {downloadingId === file.id ? "Menyiapkan…" : "Unduh file ↓"}
+                {downloadingId === file.id ? "Menyiapkan link…" : "Download file ↓"}
               </button>
             </article>
           ))}
         </div>
       ) : null}
       {!loading && projectId && visibleFiles.length === 0 ? (
-        <div className={styles.emptyState}><span>▤</span><h3>{search ? "File tidak ditemukan" : "Belum ada file yang dibagikan"}</h3><p>{search ? "Coba kata kunci atau filter yang berbeda." : "Tim Diksilab akan menambahkan dokumen kickoff, deliverable, dan lampiran meeting di sini."}</p></div>
+        <div className={styles.emptyState}><span>▤</span><h3>{search ? "File tidak ditemukan" : "Belum ada file yang dibagikan"}</h3><p>{search ? "Coba keyword atau kategori lain." : "File kickoff, deliverable, dan lampiran meeting akan muncul di sini setelah dibagikan oleh team Diksilab."}</p></div>
       ) : null}
     </section>
   );
