@@ -167,7 +167,17 @@ function ActivityTable({
               <td>{item.date}</td>
               <td>
                 <b>{item.activity}</b>
-                <small>{item.area}</small>
+                <small>
+                  {item.area.split(/(https:\/\/[^\s]+)/g).map((part, index) =>
+                    part.startsWith("https://") ? (
+                      <a key={`${part}-${index}`} href={part} target="_blank" rel="noreferrer noopener">
+                        Buka materi ↗
+                      </a>
+                    ) : (
+                      <span key={`${part}-${index}`}>{part}</span>
+                    ),
+                  )}
+                </small>
               </td>
               <td>{item.owner}</td>
               <td>
