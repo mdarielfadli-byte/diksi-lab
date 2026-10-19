@@ -139,3 +139,17 @@
     margin-top: 9px;
   }
 }
+
+/* Match meeting notes to the ink / paper / lime client workspace. */
+.panel { background: #fff; border-color: rgba(17,17,17,.14); border-radius: 14px; color: #111; box-shadow: 0 7px 22px #11111108; }
+.header p, .detail small { color: #7040a8; }
+.header > span, .list small { color: #65655f; }
+.list { gap: 7px; background: transparent; }
+.list button { border: 1px solid rgba(17,17,17,.12); border-radius: 9px; background: #f4f2ed; color: #111; }
+.list button:hover, .list .selected { outline: 0; border-color: #a96aff; background: #f5effb; }
+.detail > div { border: 1px solid rgba(17,17,17,.1); border-radius: 9px; background: #f4f2ed; }
+.detail p, .actions span { color: #55554f; }
+.files button { color: #111; }
+.files button:hover { color: #7040a8; }
+.notice { border-radius: 8px; background: #eef4d9; color: #3c4c0c; }
+.error { border-radius: 8px; background: #f6e9e7; color: #842d24; }

@@ -5,3 +5,24 @@
 .approvals{display:grid;gap:7px}.approvals>b{font-size:12px}.approvals article{padding:12px;background:#20254b}.approvals p{margin:0 0 8px;font-size:11px;line-height:1.45}.approvals small{color:#b7ff21;font-size:10px}.approvals div{display:flex;gap:8px;margin-top:10px}.approvals button,.panel form button{border:0;background:#b7ff21;color:#172515;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer}.approvals .revision{background:#8c72eb;color:#fff}
 .panel form{display:grid;gap:10px}.panel form label{display:grid;gap:6px;font-size:11px;font-weight:800}.panel input,.panel textarea{width:100%;box-sizing:border-box;min-height:40px;padding:10px 11px;border:1px solid #ffffff25;border-radius:4px;background:#101634;color:#fff;font:inherit;font-size:12px}.panel textarea{min-height:90px;resize:vertical}.panel input:focus-visible,.panel textarea:focus-visible{outline:3px solid #b7ff21;outline-offset:2px}.panel button:disabled{opacity:.55;cursor:wait}.panel button:focus-visible{outline:3px solid #fff;outline-offset:2px}.comments p{margin:0;padding-top:6px;border-top:1px solid #ffffff12}.notice,.error{margin:14px 0 0;padding:10px;font-size:11px}.notice{background:#253d2d;color:#dcffbd}.error{background:#4e2428;color:#ffd4d6}
 @media(max-width:760px){.grid{grid-template-columns:1fr}.header{display:block}.header>span{display:block;margin-top:9px}}
+
+/* Client workspace components use the same restrained DiksiLab palette. */
+.panel { background: #fff; border: 1px solid rgba(17,17,17,.14); border-radius: 14px; color: #111; box-shadow: 0 7px 22px #11111108; }
+.header p { color: #7040a8; }
+.header > span { color: #65655f; }
+.taskList button { border-color: rgba(17,17,17,.13); border-radius: 9px; background: #f4f2ed; color: #111; }
+.taskList button:hover, .taskList .selected { border-color: #a96aff; background: #f5effb; }
+.taskList small { color: #65655f; }
+.detail, .taskMeta, .approvals { color: #111; }
+.taskMeta span, .approvals small { color: #7040a8; }
+.checklist, .files, .comments { border: 1px solid rgba(17,17,17,.1); border-radius: 9px; background: #f4f2ed; color: #44443e; }
+.checklist b, .files b { color: #111; }
+.approvals article { border: 1px solid rgba(17,17,17,.1); border-radius: 9px; background: #f4f2ed; }
+.approvals button, .panel form button { border-radius: 8px; background: #d8ff3e; color: #111; }
+.approvals .revision { background: #eee4fa; color: #58328b; }
+.panel input, .panel textarea { border-color: rgba(17,17,17,.2); border-radius: 8px; background: #f9f9f7; color: #111; }
+.panel input:focus-visible, .panel textarea:focus-visible { outline-color: #a96aff; }
+.panel button:focus-visible { outline-color: #111; }
+.comments p { border-color: rgba(17,17,17,.12); }
+.notice { border-radius: 8px; background: #eef4d9; color: #3c4c0c; }
+.error { border-radius: 8px; background: #f6e9e7; color: #842d24; }

@@ -661,6 +661,116 @@
     min-height: 48px;
   }
 }
+
+/* DiksiLab client workspace theme: ink, paper, lime, with a restrained violet accent. */
+.dashboard {
+  --dl-ink: #111111;
+  --dl-paper: #f9f9f7;
+  --dl-cream: #f4f2ed;
+  --dl-lime: #d8ff3e;
+  --dl-violet: #a96aff;
+  --dl-muted: #65655f;
+  --dl-line: rgba(17, 17, 17, .14);
+  background: var(--dl-paper);
+  color: var(--dl-ink);
+  font-family: "DM Sans", Arial, sans-serif;
+}
+.sidebar {
+  background: var(--dl-ink);
+  border: 0;
+  color: var(--dl-paper);
+}
+.brand { color: var(--dl-paper); }
+.brand span, .loading span { color: var(--dl-lime); }
+.client { background: #ffffff0c; border-color: #ffffff20; border-radius: 12px; }
+.client > span { background: var(--dl-lime); color: var(--dl-ink); }
+.client small, .nav a, .sidebarFoot { color: #b9b9b1; }
+.nav a { border-left: 0; border-radius: 9px; transition: background .18s ease, color .18s ease; }
+.nav a:hover, .nav .active { background: var(--dl-lime); color: var(--dl-ink); }
+.nav a:hover span, .nav .active span { color: var(--dl-ink); }
+.sidebarFoot { border-color: #ffffff26; }
+.sidebarFoot b { color: var(--dl-lime); }
+.main {
+  background: var(--dl-paper);
+  color: var(--dl-ink);
+}
+.topbar { border-color: var(--dl-line); }
+.topbar p, .panelTitle p { color: #7040a8; }
+.topbar h1, .panelTitle h2 { color: var(--dl-ink); }
+.topStatus { color: var(--dl-ink); }
+.topStatus i { background: var(--dl-lime); box-shadow: 0 0 0 4px #d8ff3e66; }
+.topStatus span { border-color: var(--dl-line); color: var(--dl-muted); }
+.metrics article {
+  border: 1px solid var(--dl-line);
+  border-radius: 13px;
+  box-shadow: 0 5px 18px #11111109;
+}
+.metricLime { background: var(--dl-ink); color: var(--dl-paper); }
+.metricPurple, .metricBlue { background: #fff; color: var(--dl-ink); }
+.metricPink { background: var(--dl-lime); color: var(--dl-ink); }
+.metrics small { opacity: .68; }
+.metrics span { opacity: .72; }
+.cyclePanel, .activityPanel {
+  background: #fff;
+  color: var(--dl-ink);
+  border: 1px solid var(--dl-line);
+  border-radius: 14px;
+  box-shadow: 0 7px 22px #11111108;
+}
+.panelTitle > span { color: var(--dl-muted); }
+.monthCard { background: var(--dl-cream); border-color: var(--dl-line); border-radius: 10px; }
+.monthCard h3 { color: var(--dl-ink); }
+.weekdays span { color: var(--dl-muted); }
+.day, .emptyDay { background: #fff; border-radius: 6px; }
+.day > b { color: var(--dl-ink); }
+.day span { background: var(--dl-lime); color: var(--dl-ink); border-radius: 5px; }
+.emptyDay { background: var(--dl-cream); }
+.calendarNote { color: var(--dl-muted); }
+.roadmap { gap: 8px; background: transparent; }
+.roadmap article { background: var(--dl-cream); border: 1px solid var(--dl-line); border-radius: 10px; }
+.roadmap_active { background: var(--dl-lime); box-shadow: 0 0 0 3px #d8ff3e66; }
+.roadmap_next { background: var(--dl-violet); }
+.roadmap_future { background: #c8c8c1; }
+.roadmap small, .activityTable td:nth-child(2) small, .activityTable td:nth-child(3) { color: var(--dl-muted); }
+.roadmap h3, .activityTable td:first-child, .activityTable td { color: var(--dl-ink); }
+.roadmap p { color: #55554f; }
+.roadmap article > span { background: #ffffffb8; color: var(--dl-muted); border-radius: 8px; }
+.tableWrap { border-color: var(--dl-line); border-radius: 10px; overflow: hidden; }
+.activityTable th { background: var(--dl-cream); color: var(--dl-muted); }
+.activityTable td { border-color: var(--dl-line); }
+.activityTable td:nth-child(2) small a { color: #7040a8; }
+.done, .badgeDone { background: var(--dl-lime); color: var(--dl-ink); }
+.scheduled, .badgeSchedule { background: #eee4fa; color: #58328b; }
+.updateList, .kpiGrid { gap: 8px; background: transparent; }
+.updateList article, .kpiGrid article { background: var(--dl-cream); border: 1px solid var(--dl-line); border-radius: 10px; color: var(--dl-ink); }
+.updateList article > span { border-radius: 7px; }
+.update_needs_approval { background: #eee4fa; color: #58328b; }
+.update_approved { background: var(--dl-lime); color: var(--dl-ink); }
+.update_info { background: #e9e8e2; color: #41413b; }
+.updateList p, .kpiGrid span, .kpiGrid i { color: #55554f; }
+.updateList small, .kpiGrid small { color: var(--dl-muted); }
+.kpiGrid .kpiReady { color: #58730b; }
+.documentGrid { gap: 8px; background: transparent; }
+.documentGrid article { background: var(--dl-cream); border: 1px solid var(--dl-line); border-radius: 10px; }
+.documentGrid article > b { background: var(--dl-lime); color: var(--dl-ink); border-radius: 7px; }
+.documentGrid span, .documentGrid small { color: var(--dl-muted); }
+.documentGrid article > i { color: #58730b; }
+.main footer { color: var(--dl-muted); }
+.main footer span { color: #7040a8; }
+.loading { background: var(--dl-paper); color: var(--dl-ink); }
+.loading p { color: var(--dl-muted); }
+.loading button { background: var(--dl-lime); color: var(--dl-ink); border-radius: 9px; }
+.calendarControls button { background: var(--dl-ink); color: var(--dl-paper); border-radius: 8px; transition: background .18s ease, color .18s ease; }
+.calendarControls button:hover { background: var(--dl-lime); color: var(--dl-ink); }
+
+@media (max-width: 900px) {
+  .sidebar { background: var(--dl-ink); }
+  .nav { scrollbar-color: #65655f var(--dl-ink); }
+}
+@media (max-width: 620px) {
+  .topStatus { color: var(--dl-muted); }
+  .cyclePanel, .activityPanel { border-radius: 12px; }
+}
 .calendarControls {
   display: flex;
   gap: 8px;
@@ -687,3 +797,6 @@
     font-size: 9px;
   }
 }
+
+.calendarControls button { background: var(--dl-ink); color: var(--dl-paper); border-radius: 8px; transition: background .18s ease, color .18s ease; }
+.calendarControls button:hover { background: var(--dl-lime); color: var(--dl-ink); }
