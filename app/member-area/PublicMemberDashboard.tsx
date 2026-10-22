@@ -275,6 +275,7 @@ export function PublicMemberDashboard({
   companySlug,
   companyId,
   projectId,
+  isTeam = false,
   onSignOut,
   onBackToWorkspace,
   page = "overview",
@@ -282,6 +283,7 @@ export function PublicMemberDashboard({
   companySlug: string;
   companyId: string;
   projectId: string | null;
+  isTeam?: boolean;
   onSignOut: () => void;
   onBackToWorkspace?: () => void;
   page?: DashboardPage;
@@ -918,7 +920,7 @@ export function PublicMemberDashboard({
             </div>
           </section>
         </section> : null}
-        {page === "documents" ? <ClientDocumentLibrary companyId={companyId} projectId={projectId} /> : null}
+        {page === "documents" ? <ClientDocumentLibrary companyId={companyId} projectId={projectId} isTeam={isTeam} /> : null}
         {page === "collaboration" ? <>
           <ClientProjectActions companyId={companyId} projectId={projectId} />
           <ClientMeetingNotes projectId={projectId} />
